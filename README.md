@@ -18,7 +18,6 @@ Jquery + bootstrap filters rending out of the box for backoffice use
   <link rel="stylesheet" media="all" href="static/vendors/css/bootstrap-daterangepicker/improvely.css">
   <link rel="stylesheet" media="all" href="static/vendors/css/bootstrap/bootstrap.min.css">
   <!--<link rel="stylesheet" media="all" href="static/vendors/css/font-awesome/font-awesome.min.css">-->
-  <link rel="stylesheet" media="all" href="static/vendors/css/metisMenu.min.css">
 <body>
   <div id="wrapper">
       <div id="filter"></div>
