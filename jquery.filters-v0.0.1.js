@@ -1,0 +1,713 @@
+(function ( $ ) {
+
+    var textType = 'text',
+        defaultParameterName = 'No Name Defined',
+        dateRange = 'date-range',
+        dateRangeName = 'daterange',
+        dateTimeFormat = 'DD-MM-YYYY',
+        multiCheckBoxes = 'multi',
+        single = 'single',
+        empty = 'empty',
+        showSingleFilterStatus = 'show-single',
+        title;
+
+
+    var filterModal = {
+        that: null,
+        global: {},
+        filters: {},
+        selectedFilterParameters: {},  //each item here is like {attributeName: 'examID', attributeHumaneName: 'exam ID', values: [{name: 'exam_id', value: '1234234'}]}
+        searchClickedCallback: undefined, // a function to be executed after we click search
+    };
+
+    $.fn.bootstrapFilter = function(options) {
+
+        // Defaults Values
+        var settings = $.extend({
+            title: 'Default Filter Title',
+            maxElementsInMultiBox: 3,
+            dateFormat: dateTimeFormat,
+            selectBoxHeight: 180,
+        }, options);
+
+        filterModal.that = this;
+        filterModal.settings = settings;
+        filterModal.searchClickedCallback = settings.searchClickedCallback;
+
+        this.html(buildHtml(settings)).hide().fadeIn();
+        renderRateRangeIfNeeded();
+        bindFilterClicks();
+        populateModal();
+
+        return this;
+    };
+
+    $.fn.renderFilter = function(){
+        filterModal.that.bootstrapFilter(filterModal.settings);
+    };
+
+    /////////////// html rendering here  ////////////////////
+    function buildHtml(settings){
+
+        var selectedFiltersHtml,
+            filterInternalHtml,
+            searchButton,
+            selectedFilters;
+
+        // External Style
+        filterModal.that.css({border: '1px solid gray', display: 'inline-block', float: 'left', padding: '33px', "border-radius": '5px'});
+        filterModal.that.addClass('col-md-12');
+
+        //building the selected filters html
+        selectedFiltersHtml = buildSelectedFiltersHtml();
+        selectedFilters =  '<div id="selected-filters" class="row" style="padding-bottom: 15px; margin-bottom: 15px;">'+selectedFiltersHtml+'</div>';
+
+        //building the filters html
+        filterInternalHtml = buildFiltersHtml();
+
+        searchButton =  '<div class="clearfix"></div>' +
+        '<div id="filter-search-button" class="row" style="float: right; margin-top: 20px;">' +
+        '<button style="padding: 10px 112px" class="btn btn-lg btn-block btn-success">Search</button>' +
+        '</div> ';
+
+        title = '<legend>'+ settings.title+'</legend>';
+
+        return '<div class="row"><i id="show-hide-filter" class="fa fa-chevron-up show-hide-filter-js" style="float: right;"></i></div>' +
+                '<fieldset id="bootstrap-filter">' +
+                    selectedFilters +
+                    '<div id="filters-and-button">' +
+                        filterInternalHtml +
+                        searchButton +
+                    '</div>' +
+                '</fieldset>'
+    }
+
+
+
+    function  buildSingleFilterHtml(parameter, index){
+        if (!buildFilterValidations(parameter)){
+            return
+        }
+
+        var name = parameter.name || defaultParameterName,
+            filterTitleHtml = '<div data-attribute="'+ parameter.attributeName+'" class="title" style="">'+ name +' </div>',
+            specificHtml,
+            backButton = '',
+            height = showOnlyOneFilter(filterModal.status) ? 'auto' : filterModal.settings.selectBoxHeight + 'px';
+
+        if (entirePageFilter(index)){
+            backButton = '<div class="row"><a class="back-button-js" style="float: left; margin-left: 20px; margin-bottom: 8px;">Back</a></div>'
+        }
+
+        switch(parameter.type) {
+            case textType:
+                specificHtml = renderTextInput(parameter, name);
+                break;
+            case dateRange:
+                specificHtml = renderDateRange();
+                break;
+            case multiCheckBoxes:
+                specificHtml = renderMultiSelect(parameter, name);
+                break;
+            case single:
+                specificHtml = renderSingleSelect(parameter);
+                break;
+            case empty:
+                specificHtml = '';
+                filterTitleHtml = '';
+                break;
+            default:
+                specificHtml = '';
+                break;
+        }
+
+        return '<div class="select-parameter-box '+ parameter.type+ ' " style="border: 1px solid #000000; height: '+ height + '; padding: 20px; width: 100%; float: left;">' +
+            backButton +
+            filterTitleHtml +
+            '<div class="group-surround">' +
+            specificHtml +
+            '</div>' +
+            '</div>'
+    };
+
+    function renderTextInput(parameter, name){
+        return '<input style="margin: 5px 0" class="form-control" placeholder="'+ (parameter.placeholder || name) + '">';
+    }
+
+    function renderDateRange(){
+        return '<div id="daterange" style="float: left; margin: 5px 0;" class="selectbox active">'  +
+            '<i class="fa fa-calendar"></i>' +
+            '<input type="text" data-time-picker="true" name="'+dateRangeName+'" style="width: 170px; margin-left: 5px;">' +
+            '</div>';
+    }
+
+    function renderMultiSelect(parameter, name){
+        var html,
+            checkBoxesHtml = '',
+            showMoreButton = '',
+            showMoreModelName = calcShowMoreModelName(name),
+            filteredOptions = [],
+            maxElementsToShow = showOnlyOneFilter(filterModal.status) ? 6 : filterModal.settings.maxElementsInMultiBox ;
+
+        if (filterModal.startTime || filterModal.endTime) {
+            filteredOptions = filterOptionsByDateRange(parameter.options);
+        }else{
+            filteredOptions = parameter.options;
+        }
+
+        $.each(filteredOptions, function(index, filterParameter){
+            var display = 'block';
+            if (index >  maxElementsToShow - 1 && !(filterParameter.checked)){
+                display = 'none';
+                showMoreButton = '<a data-toggle="modal" data-target="#'+showMoreModelName+'" class="btn btn-default btn-xs show-more-js">Multi Select .. </a>';
+            }
+
+            //TODO remove commented code
+            //var checked = filterParameter.checked ? 'checked="checked"' : '';
+            //checkBoxesHtml += '<div class="checkbox '+ hidden+'"><label>' +
+            //'<input type="checkbox" '+ checked +' value="'+filterParameter.value+'">'+filterParameter.name +
+            //'</label></div>';
+            checkBoxesHtml += '<div class="checkbox" style="display: '+ display + '"><a class="single-filter-js"  data-attribute="'+filterParameter.value+'">'+filterParameter.name+'</a></div>';
+        });
+        checkBoxesHtml += '<div class="clearfix"> </div>';
+
+        html = '<div class="form-group"> ' + checkBoxesHtml + showMoreButton +  '</div>';
+
+        //rendering a show more popup if needed
+        if ('' != showMoreButton){
+            html += showMoreHiddenPopUpHtml(name, showMoreModelName, parameter);
+        }
+
+        return html;
+    }
+
+    function renderSingleSelect(parameter){
+        var optionsHtml = '',
+            showMoreButton = '',
+            html,
+            filteredOptions = [],
+            showMoreModelName = calcShowMoreModelName(name),
+            maxElementsToShow = filterModal.settings.maxElementsInMultiBox ;
+
+        if (filterModal.startTime || filterModal.endTime) {
+            filteredOptions = filterOptionsByDateRange(parameter.options);
+        }else{
+            filteredOptions = parameter.options;
+        }
+
+
+        $.each(filteredOptions, function(index, filterParameter){
+            var display = 'block';
+            if (index >  maxElementsToShow - 1){
+                display = 'none';
+                showMoreButton = '<a data-toggle="modal" data-target="#'+showMoreModelName+'" class="show-more-js">Show More .. </a>';
+            }
+
+            optionsHtml += '<div class="checkbox" style="display: '+ display + '"><a class="single-filter-js" data-attribute="'+filterParameter.value+'">'+filterParameter.name+'</a></div>';
+        });
+
+        html = '<div class="form-group"> ' + optionsHtml + showMoreButton + '</div>';
+
+        //rendering a show more popup if needed
+        if ('' != showMoreButton){
+            html += showMoreHiddenPopUpHtml(parameter.name, showMoreModelName, parameter);
+        }
+
+        return html;
+    }
+
+    function renderRateRangeIfNeeded(){
+        var dateRangeElement = $('input[name="'+dateRangeName+'"]');
+        if (dateRangeElement.length >0 ) {
+            var dateRange = dateRangeElement.daterangepicker(
+                {
+                    format: filterModal.settings.dateFormat,
+                    startDate: moment().subtract(30, 'days').format(filterModal.settings.dateFormat),
+                    endDate:  moment().format(filterModal.settings.dateFormat)
+                },
+                function (start, end, label) {
+                    console.log('change');
+                }
+            );
+
+            if (filterModal.startTime){
+                dateRange.data('daterangepicker').setStartDate(filterModal.startTime);
+            }
+
+            if (filterModal.endTime){
+                dateRange.data('daterangepicker').setEndDate(filterModal.endTime);
+            }
+        }
+    }
+
+
+    /////////////// internal html methods  ////////////////////
+
+    //should not render filter if is already selected
+    function shouldNotRenderParameter(parameter){
+        return undefined != filterModal.selectedFilterParameters[parameter.attributeName];
+    }
+
+    function buildSelectedFiltersHtml(){
+        var html = '',
+            humanParameterName,
+            showMoreModelName,
+            selectedValue,
+            parameter;
+
+        $.each(filterModal.selectedFilterParameters, function(serverName, selectedParameter){
+            humanParameterName = selectedParameter.attributeHumaneName;
+            showMoreModelName = calcShowMoreModelName(selectedParameter.attributeHumaneName);
+            selectedValue = (1 < selectedParameter.values.length) ? '(' + selectedParameter.values.length + ')' : selectedParameter.values[0].name;
+
+            html += '<div class="selectbox pull-left active" data-attribute="'+ serverName +'" ' +
+                        'style="padding: 10px; margin-right: 10px; margin-bottom: 10px; ;border: 1px solid #000000">'  +
+                        '<a data-toggle="modal" data-target="#'+showMoreModelName+'">'+ humanParameterName + ': '+  selectedValue +'</a>' +
+                                '<button type="button" class="close remove-filter" aria-label="Close" style="padding: 0 10px 0 15px; line-height: 0.75">' +
+                                '<span aria-hidden="true">&times;</span></button>' +
+                        '</div>';
+
+            parameter = filterModal.filters[serverName];
+            html += showMoreHiddenPopUpHtml(parameter.name, showMoreModelName, parameter);
+        });
+
+        return html
+    }
+
+    function buildFiltersHtml(){
+        var filterInternalHtml = '<div class="row" style="border: 1px solid #000000">',
+            additionalFilterHtml = '',
+            realIndex = 0,
+            tempHtml,
+            showMoreModelName;
+
+        //TODO - remove. this functionality is no longer relevant
+        if (showOnlyOneFilter(filterModal.status)){
+            return selectedFilterHtml(filterModal.singleFilterToShow);
+        }
+
+
+        // first 6 filters
+        $.each(filterModal.settings.filterParameters, function(index, parameter){
+            tempHtml = buildSingleParameterHtml(realIndex, parameter);
+
+            if ('' != tempHtml){
+                realIndex += 1
+            }
+
+            filterInternalHtml += tempHtml;
+
+            // TODO - collect only once . initiate the modal with data. happens every time. should block this.
+            if (-1 < $.inArray(parameter.type,[single, multiCheckBoxes])) {
+                filterModal.filters[parameter.attributeName] = parameter;
+            }
+        });
+
+        // fill other boxes with nothing if too little parameters passed
+        if (6 > realIndex){
+
+            for (var i = 0; i < (6 - realIndex); i++) {
+                filterInternalHtml += buildSingleParameterHtml(i + realIndex , {name: '', type: empty, attributeName: 'bla'})
+            }
+        }
+
+        //additional filters
+        realIndex = 0;
+        $.each(filterModal.settings.filterParameters, function(index, parameter){
+            if (!shouldNotRenderParameter(parameter)){
+                realIndex += 1
+            }
+            if (realIndex > 6 ){
+                if (shouldNotRenderParameter(parameter)){
+                    additionalFilterHtml += '';
+                }else{
+                    showMoreModelName = calcShowMoreModelName(parameter.name);
+                    tempHtml = showMoreHiddenPopUpHtml(parameter.name, showMoreModelName, parameter);
+                    additionalFilterHtml += '<div class="checkbox"><a data-toggle="modal" data-target="#'+
+                                                showMoreModelName+'" data-attribute="'+
+                                                parameter.attributeName+'">'+parameter.name+'</a>' +
+                                            '</div>' +
+                                            tempHtml;
+                }
+            }
+        });
+        if (7 > realIndex){
+            additionalFilterHtml += '<h4>No additional filters</h4>'
+        }
+
+        filterInternalHtml +='<div class="select-parameter-box  " style="border: 1px solid #000000; height: '+filterModal.settings.selectBoxHeight *2+'px; padding: 20px; width: 25%; float: left;">' +
+                                'Additional Filters' +
+                                    '<div class="group-surround">' +
+                                        additionalFilterHtml +
+                                    '</div>' +
+                                '</div>' ;
+
+        filterInternalHtml += '</div>';
+
+        return filterInternalHtml;
+    }
+
+    function buildSingleParameterHtml(index, parameter){
+        var filterInternalHtml = '',
+            width;
+        if (shouldNotRenderParameter(parameter)){
+            return '';
+        }
+        if (index > 5){
+            return '';
+        }
+
+
+        if (isEven(index)){
+            if (entirePageFilter(index)){
+               width = 100;  // the filter will span on the entire page
+            }else{
+                width = 25;
+            }
+            filterInternalHtml += '<div style="width:'+width+'%; float: left">'
+        }
+        if (!isEven(index)){
+            filterInternalHtml += '<div class="clearfix"></div>'
+        }
+        filterInternalHtml += buildSingleFilterHtml(parameter, index);
+
+
+        if (!isEven(index)){
+            filterInternalHtml += '</div>'
+        }
+
+        return filterInternalHtml
+    }
+
+    function entirePageFilter(index){
+        return index < 0
+    }
+
+    function selectedFilterHtml(filter){
+        var parameter = filterModal.filters[filter.value],
+            html = buildSingleParameterHtml(-2, parameter);
+        return '<div class="row">'+html+'</div> '
+    }
+
+    function showMoreHiddenPopUpHtml(parameterName, showMoreModelName, parameter){
+        return '<div id="'+showMoreModelName+'" class="modal fade in">'+
+            '<div class="modal-dialog">' +
+                '<div class="modal-content">' +
+                    '<div class="modal-header">' +
+                        '<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>' +
+                        '<div data-attribute="'+ parameter.attributeName+'" class="title" style="visibility: hidden;">'+ parameterName +' </div>' +
+                        '<h4 class="modal-title">'+parameterName+'</h4>' +
+                    '</div>' +
+                    '<div class="modal-body">' +
+                        htmlForParameterOptions(parameter.options) +
+                    '</div>' +
+                    '<div class="modal-footer">' +
+                        '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>' +
+                        '<button type="button" class="btn btn-primary multi-popup-save-changes-js">Apply Changes</button>' +
+                    '</div>' +
+                '</div><!-- /.modal-content -->'+
+            '</div><!-- /.modal-dialog -->' +
+            '</div><!-- /.modal -->';
+
+    }
+
+    function htmlForParameterOptions(parameterOptions) {
+        var checkBoxesHtml = '';
+        $.each(parameterOptions, function (index, filterParameter) {
+            checkBoxesHtml += '<div class="checkbox"><label>' +
+            '<input type="checkbox" value="' + filterParameter.value + '">' + filterParameter.name +
+            '</label></div>';
+        });
+
+        return checkBoxesHtml;
+    }
+
+    function buildFilterValidations(parameter){
+        if (undefined == parameter.attributeName){
+            alert(parameter.name || defaultParameterName + ' does not have an attributeName parameter defined. its a must');
+            return false
+        }
+
+        return true
+    }
+
+    function showOnlyOneFilter(status){
+        return (showSingleFilterStatus == status)
+    }
+
+    /////////////// internal html methods end  ////////////////////
+
+    /////////////// html rendering end  ////////////////////
+
+    /////////////// Events Binding here  ////////////////////
+    function bindFilterClicks(){
+        bindSearchClicked();
+        bindMultiPopup();
+        bindSingleClick();
+        bindRemoveSelectedFilter();
+        bindMultiSelectFromMain();
+        bindChangeDate();
+        bindExpandCollapse();
+        bindBackButton();
+    }
+
+    function bindMultiPopup(){
+        $('.multi-popup-save-changes-js').on('click', function () {
+            var popup = $(this).closest('.modal'),
+                title = $(popup.find('.modal-title')[0]).text(),
+                result;
+
+            result = addMultiSelectedToDataModal(popup);
+
+            if (0 < result.checked.length) {
+                //close the popup
+                popup.modal('toggle');
+
+                setTimeout(function(){
+                    //refresh the filter
+                    filterModal.that.renderFilter()
+                }, 200);
+
+
+            }
+
+        })
+    }
+
+    function bindMultiSelectFromMain(){
+
+        $('.multi-apply-main-js').on('click', function () {
+            var selectBox = $(this).closest('.select-parameter-box');
+
+            addMultiSelectedToDataModal(selectBox);
+
+            resetShowSingleFilterIfNeeded();
+
+            filterModal.that.renderFilter();
+
+        })
+    }
+
+    function findCheckedOptions(parentElement){
+        var checked = [],
+            unchecked = [],
+            data;
+
+        $(parentElement).find('input').each(function (_, element) {
+            data = buildElementData(element, multiCheckBoxes);
+            if ($(element).is(":checked")){
+                $.extend(data, {checked: true});
+                checked.push(data);
+            }else{
+                unchecked.push(data)
+            }
+        });
+
+        return {checked: checked, unchecked: unchecked}
+    }
+
+    function buildElementData(element, type){
+        var name, value;
+        switch (type){
+            case multiCheckBoxes:
+                name = $(element).closest('label').text();
+                value = $(element).val();
+                break;
+            case single:
+                name = $(element).text();
+                value = $(element).attr('data-attribute');
+                break;
+            default:
+                $(element).text();
+                break;
+        }
+
+        return {name: name, value: value};
+    }
+
+
+    function bindSearchClicked() {
+
+        $('#filter-search-button').on('click', function(){
+            var selectedFilters;
+
+            selectedFilters = collectSelectedFilters();
+
+            if (undefined == filterModal.searchClickedCallback){
+                alert('no search callback is defined. send one via the searchClickedCallback parameter');
+            }
+
+            filterModal.searchClickedCallback(selectedFilters)
+
+        });
+    }
+
+    function collectSelectedFilters(){
+        var tempValues = [],
+            DoNotSaveThisInTheSelectedFiltered = {};
+
+        //collect all the selected filters if still haven't selected
+        //collect uncollected multi, single
+        $.each([multiCheckBoxes], function(_, inputType) {
+            $('.select-parameter-box.' + inputType).each(function (_, selectBox) {
+                addMultiSelectedToDataModal(selectBox, true);
+            });
+        });
+
+        $.each([textType, dateRange], function(_, inputType) {
+            $('.select-parameter-box.' + inputType).each(function (_, selectBox) {
+                var serverParameterName = getAttributeBackendName(selectBox),
+                    humanParameterName = getAttributeHumanName(selectBox),
+                    searchFor = getSearchParameter(inputType);
+
+                 //TODO - find a better way to collect the data
+                $(selectBox).find(searchFor).each(function (_, inputElement) {
+                    var value = $(inputElement).val();
+                    if (value) {
+                        tempValues.push({value: value}); // TODO pass also name here
+                    }
+                });
+                if (0 < tempValues.length) {
+                    DoNotSaveThisInTheSelectedFiltered[serverParameterName] = {attributeHumaneName: humanParameterName, values: tempValues};
+                    tempValues = [];
+                }
+            });
+        });
+
+        console.log(filterModal.selectedFilterParameters);
+
+        return $.extend(DoNotSaveThisInTheSelectedFiltered, filterModal.selectedFilterParameters)
+    }
+
+    function bindSingleClick(){
+        $('.single-filter-js').on('click', function(){
+            var selectBox = $(this).closest('.select-parameter-box');
+
+            addSingleSelectedToDataModal(this, selectBox);
+
+            resetShowSingleFilterIfNeeded();
+
+            filterModal.that.renderFilter()
+        });
+    }
+
+    function bindRemoveSelectedFilter(){
+        $('.remove-filter').on('click', function(){
+            var serverFilterName = $(this).parent('.selectbox').attr('data-attribute');
+
+            //remove the filter from selected filters
+            delete filterModal.selectedFilterParameters[serverFilterName];
+
+            //re render the filter
+            filterModal.that.renderFilter();
+        });
+    }
+
+    function bindChangeDate(){
+        $('.applyBtn').on('click',function(){
+            filterModal.startTime = $('input[name=daterangepicker_start]').last().val();
+            filterModal.endTime = $('input[name=daterangepicker_end]').last().val();
+
+            //re render with dates filter
+            filterModal.that.renderFilter();
+        })
+    }
+
+    function bindExpandCollapse(){
+        $('.show-hide-filter-js').on('click', function(){
+            $('#filters-and-button').toggle('slow');
+            $(this).toggleClass("fa-chevron-down");
+        })
+    }
+
+    function bindBackButton(){
+        $('.back-button-js').on('click', function () {
+            resetShowSingleFilterIfNeeded();
+
+            filterModal.that.renderFilter();
+        })
+    }
+
+
+    function getSearchParameter(inputType){
+        switch(inputType) {
+            case textType:
+            case dateRange:
+                return 'input';
+                break;
+            case multiCheckBoxes:
+            case single:
+                return 'input:checked';
+                break;
+        }
+
+    }
+
+    function filterOptionsByDateRange(options){
+
+        return $.map(options, function(option){
+            if (undefined == option.date){ //parameter doesn't have a date to compare to
+                return option
+            }else{
+                if (moment(filterModal.startTime, filterModal.settings.dateFormat) <= moment(option.date, filterModal.settings.dateFormat) &&
+                    moment(filterModal.endTime, filterModal.settings.dateFormat) >= moment(option.date, filterModal.settings.dateFormat)){
+                    return option
+                }
+            }
+        });
+    }
+
+    function addSingleSelectedToDataModal(selectedItem ,selectBox){
+        var serverParameterName = getAttributeBackendName(selectBox),
+            humanParameterName = getAttributeHumanName(selectBox),
+            data = buildElementData(selectedItem, single);
+
+        filterModal.selectedFilterParameters[serverParameterName] = {attributeHumaneName: humanParameterName, values: [data]};
+    }
+
+    function addMultiSelectedToDataModal(selectBox, dontAlert){
+        var serverParameterName = getAttributeBackendName(selectBox),
+            humanParameterName = getAttributeHumanName(selectBox),
+            optionsResult;
+
+        optionsResult = findCheckedOptions(selectBox);
+
+        if (0 ==  optionsResult.checked.length){
+            if (undefined == dontAlert || false == dontAlert) {
+                alert('please select at least one option.');
+            }
+            return {checked: []};
+        }
+
+        filterModal.selectedFilterParameters[serverParameterName] = { attributeHumaneName: humanParameterName, values: optionsResult.checked};
+
+        return {checked: optionsResult.checked}
+    }
+
+    function resetShowSingleFilterIfNeeded(){
+        filterModal.status = null;
+        filterModal.singleFilterToShow = null;
+    }
+
+    function getAttributeBackendName(selectBox){
+        return $(selectBox).find('.title').attr('data-attribute')
+    }
+    function getAttributeHumanName(selectBox){
+        return $(selectBox).find('.title').last().text()
+    }
+
+    function populateModal(){
+        filterModal.selectedFiltersObj = filterModal.that.find('#selected-filters');
+    }
+
+    function isEven(number){
+        return 0 == number%2
+    }
+
+    function calcShowMoreModelName(name){
+        return name.replace(/\s+/g, '') + 'ShowMoreModal'
+    }
+
+    /////////////// Events Binding end  ////////////////////
+
+}( jQuery ));
