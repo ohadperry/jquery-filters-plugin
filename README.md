@@ -23,7 +23,39 @@ Jquery + bootstrap filters rending out of the box for backoffice use
       <div id="filter"></div>
   </div> 
  </body>
+<script type="text/javascript">
+    function sendToServer(data){
+        alert('sending params to server: ' + JSON.stringify(data));
+    }
 
+    var devicesOptions = [{name: 'LGE', value: 'LGE'}, {name: 'Apple', value: 'Apple'}, {name: 'Samsung', value: 'Samsung'}],
+            productOptions = [
+                {name: 'Product Name 1', value: 'product_name_1', selected: true},
+                {name: 'Product Name 2', value: 'product_name_2'},
+                {name: 'Product Name 3', value: 'product_name_3'},
+                {name: 'Product Name 4', value: 'product_name_4'},
+                {name: 'Product Name 5', value: 'product_name_5'},
+                {name: 'Product Name 6', value: 'product_name_6'},
+            ],
+            operatingSystemVersionOptions = [
+                {name: '8.1 (ios)', value: '8.1'},
+                {name: '8.2 (ios)', value: '8.2'},
+                {name: '5.5 (kitkat)', value: '5.5'}
+            ],
+            options = {
+                title: 'Simple Filter',
+                searchClickedCallback: sendToServer,
+                filterParameters: [
+                    {type: 'text', attributeName: 'subject_id', name: 'Object ID', placeholder: 'placeholder text here'},
+                    {type: 'date-range', attributeName: 'date_range', name: 'Date Range'},
+                    {type: 'single', attributeName: 'productName',name: 'Product', options: productOptions},
+                    {type: 'multi', attributeName: 'deviceName',name: 'Manufacturer', options: devicesOptions},
+                ]
+            };
+
+    $('#filter').bootstrapFilter(options);
+
+</script>
 
 
 </html>
