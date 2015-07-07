@@ -708,7 +708,7 @@
     }
 
     function populateSelectedFiltersFromDefaultValues(){
-        $.each(filterModal.settings.options, function(_, parameter){
+        $.each(filterModal.settings.filterParameters, function(_, parameter){
             var serverParameterName = parameter.attributeName,
                 humanParameterName = parameter.name,
                 selected = [];
