@@ -83,9 +83,7 @@
                 '</fieldset>'
     }
 
-
-
-    function  buildSingleFilterHtml(parameter, index){
+    function buildSingleFilterHtml(parameter, index){
         if (!buildFilterValidations(parameter)){
             return
         }
@@ -111,7 +109,7 @@
                 specificHtml = renderMultiSelect(parameter, name);
                 break;
             case single:
-                specificHtml = renderSingleSelect(parameter);
+                specificHtml = renderSingleSelect(parameter, name);
                 break;
             case empty:
                 specificHtml = '';
@@ -143,12 +141,22 @@
     }
 
     function renderMultiSelect(parameter, name){
+        return renderGenericSelect(parameter, name);
+    }
+
+    function renderSingleSelect(parameter, name){
+        return renderGenericSelect(parameter, name)
+    }
+
+
+    function renderGenericSelect(parameter, name){
         var html,
             checkBoxesHtml = '',
             showMoreButton = '',
+            relatedTo,
             showMoreModelName = calcShowMoreModelName(name),
             filteredOptions = [],
-            maxElementsToShow = showOnlyOneFilter(filterModal.status) ? 6 : filterModal.settings.maxElementsInMultiBox ;
+            maxElementsToShow = filterModal.settings.maxElementsInMultiBox ;
 
         if (filterModal.startTime || filterModal.endTime) {
             filteredOptions = filterOptionsByDateRange(parameter.options);
@@ -163,12 +171,12 @@
                 showMoreButton = '<a data-toggle="modal" data-target="#'+showMoreModelName+'" class="btn btn-default btn-xs show-more-js">Multi Select .. </a>';
             }
 
-            //TODO remove commented code
-            //var checked = filterParameter.checked ? 'checked="checked"' : '';
-            //checkBoxesHtml += '<div class="checkbox '+ hidden+'"><label>' +
-            //'<input type="checkbox" '+ checked +' value="'+filterParameter.value+'">'+filterParameter.name +
-            //'</label></div>';
-            checkBoxesHtml += '<div class="checkbox" style="display: '+ display + '"><a class="single-filter-js"  data-attribute="'+filterParameter.value+'">'+filterParameter.name+'</a></div>';
+            //in case this filter is connected to other filters
+            relatedTo = relateToRender(filterParameter);
+
+            checkBoxesHtml += '<div class="checkbox" style="display: '+ display + '">' +
+            '<a class="single-filter-js"  data-attribute="'+filterParameter.value+'">'+
+            filterParameter.name+ relatedTo+'</a></div>';
         });
         checkBoxesHtml += '<div class="clearfix"> </div>';
 
@@ -177,41 +185,6 @@
         //rendering a show more popup if needed
         if ('' != showMoreButton){
             html += showMoreHiddenPopUpHtml(name, showMoreModelName, parameter);
-        }
-
-        return html;
-    }
-
-    function renderSingleSelect(parameter){
-        var optionsHtml = '',
-            showMoreButton = '',
-            html,
-            filteredOptions = [],
-            showMoreModelName = calcShowMoreModelName(name),
-            maxElementsToShow = filterModal.settings.maxElementsInMultiBox ;
-
-        if (filterModal.startTime || filterModal.endTime) {
-            filteredOptions = filterOptionsByDateRange(parameter.options);
-        }else{
-            filteredOptions = parameter.options;
-        }
-
-
-        $.each(filteredOptions, function(index, filterParameter){
-            var display = 'block';
-            if (index >  maxElementsToShow - 1){
-                display = 'none';
-                showMoreButton = '<a data-toggle="modal" data-target="#'+showMoreModelName+'" class="show-more-js">Show More .. </a>';
-            }
-
-            optionsHtml += '<div class="checkbox" style="display: '+ display + '"><a class="single-filter-js" data-attribute="'+filterParameter.value+'">'+filterParameter.name+'</a></div>';
-        });
-
-        html = '<div class="form-group"> ' + optionsHtml + showMoreButton + '</div>';
-
-        //rendering a show more popup if needed
-        if ('' != showMoreButton){
-            html += showMoreHiddenPopUpHtml(parameter.name, showMoreModelName, parameter);
         }
 
         return html;
@@ -284,12 +257,6 @@
             tempHtml,
             showMoreModelName;
 
-        //TODO - remove. this functionality is no longer relevant
-        if (showOnlyOneFilter(filterModal.status)){
-            return selectedFilterHtml(filterModal.singleFilterToShow);
-        }
-
-
         // first 6 filters
         $.each(filterModal.settings.filterParameters, function(index, parameter){
             tempHtml = buildSingleParameterHtml(realIndex, parameter);
@@ -299,8 +266,6 @@
             }
 
             filterInternalHtml += tempHtml;
-
-
         });
 
         // fill other boxes with nothing if too little parameters passed
@@ -383,12 +348,6 @@
         return index < 0
     }
 
-    function selectedFilterHtml(filter){
-        var parameter = filterModal.filters[filter.value],
-            html = buildSingleParameterHtml(-2, parameter);
-        return '<div class="row">'+html+'</div> '
-    }
-
     function showMoreHiddenPopUpHtml(parameterName, showMoreModelName, parameter){
         return '<div id="'+showMoreModelName+'" class="modal fade in">'+
             '<div class="modal-dialog">' +
@@ -414,7 +373,8 @@
     function htmlForParameterOptions(parameter) {
         var checkBoxesHtml = '',
             selectedFilter,
-            selectedValues = [];
+            selectedValues = [],
+            relatedTo;
 
         selectedFilter = filterModal.selectedFilterParameters[parameter.attributeName];
         if (selectedFilter){
@@ -426,12 +386,32 @@
             if (existsInArray(filterParameter.value.toString(), selectedValues)){
                 checked = 'checked = "checked"'
             }
+
+            //in case this filter is connected to other filters
+            relatedTo = relateToRender(filterParameter);
+
             checkBoxesHtml += '<div class="checkbox"><label>' +
-            '<input type="checkbox" '+ checked + ' value="' + filterParameter.value + '">' + filterParameter.name +
+            '<input type="checkbox" '+ checked + ' value="' + filterParameter.value + '">' +
+            filterParameter.name + relatedTo +
             '</label></div>';
         });
 
         return checkBoxesHtml;
+    }
+
+    function relateToRender(filterParameter){
+        var relatedTo = '';
+        if (filterParameter.relatedTo){
+            relatedTo += ' (';
+            $.each(filterParameter.relatedTo, function(paramServerName, parameterData){
+                relatedTo += parameterData.name + ', '
+            });
+            //chop off last 2 chars - ", "
+            relatedTo = relatedTo.slice(0,-2);
+            relatedTo += ')';
+
+        }
+        return relatedTo;
     }
 
     function buildFilterValidations(parameter){

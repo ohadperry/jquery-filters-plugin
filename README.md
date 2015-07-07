@@ -75,6 +75,17 @@ Jquery + bootstrap filters rending out of the box for backoffice use
 * dateFormat: 'DD-MM-YYYY'
 * selectBoxHeight: 180
 
+## filter Parameters
+* name - any name you want to display
+* value - any name your saver will identify
+* relatedTo - The field will cause this parameter to filter itself in relation to another filter
+for example:
+Filter 2 Option1 -> Filter 1 Option1
+Filter 2 Option2 -> Filter 1 Option2
+
+**Selecting Filter 1 Option1 will REMOVE Option2 from Filter2**
+
+
 # Dependencies
 
 * Jquery
