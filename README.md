@@ -3,8 +3,6 @@ Jquery + bootstrap filters rending out of the box for backoffice use
 
 --> add a picture here
 
-![Improvely.com](http://i.imgur.com/LbAMf3D.png)
-
 # Quick Start
 ```
 <!DOCTYPE html>
@@ -17,14 +15,16 @@ Jquery + bootstrap filters rending out of the box for backoffice use
   <script src="https://cdn.rawgit.com/ohadpartuck/jquery-filters-plugin/v0.0.2/jquery.filters.js" type="text/javascript"></script>
   
   <link rel="stylesheet" media="all" href="https://raw.githubusercontent.com/dangrossman/bootstrap-daterangepicker/master/daterangepicker-bs3.css">
-  <!--<link rel="stylesheet" media="all" href="static/vendors/css/bootstrap-daterangepicker/improvely.css">-->
-  <link rel="stylesheet" media="all" href="static/vendors/css/bootstrap/bootstrap.min.css">
-  <!--<link rel="stylesheet" media="all" href="static/vendors/css/font-awesome/font-awesome.min.css">-->
+  <link rel="stylesheet" media="all" href="https://cdn.rawgit.com/ohadpartuck/jquery-filters-plugin/master/css/improvely.css">
+  <link rel="stylesheet" media="all" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
 <body>
   <div id="wrapper">
       <div id="filter"></div>
   </div> 
-  </body>
+ </body>
+
+
 
 </html>
 ```
