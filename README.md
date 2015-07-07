@@ -61,6 +61,12 @@ Jquery + bootstrap filters rending out of the box for backoffice use
 </html>
 ```
 
+# Usage
+
+* Options
+** Option 1
+** Option 2
+
 # Dependencies
 
 * Jquery
@@ -69,9 +75,7 @@ Jquery + bootstrap filters rending out of the box for backoffice use
 * moment js
 * improvely (css only)
 
-# Usage
 
-## Options
 
 # Demo
 http://ohadpartuck.github.io/filter_demo/
