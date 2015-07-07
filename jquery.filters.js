@@ -6,6 +6,7 @@
         dateRangeName = 'daterange',
         dateTimeFormat = 'DD-MM-YYYY',
         multiCheckBoxes = 'multi',
+        rawObject = 'raw',
         single = 'single',
         empty = 'empty',
         showSingleFilterStatus = 'show-single',
@@ -254,6 +255,8 @@
             showMoreModelName,
             selectedValue,
             parameter;
+
+        populateSelectedFiltersFromDefaultValues();
 
         $.each(filterModal.selectedFilterParameters, function(serverName, selectedParameter){
             humanParameterName = selectedParameter.attributeHumaneName;
@@ -517,6 +520,10 @@
                 name = $(element).text();
                 value = $(element).attr('data-attribute');
                 break;
+            case rawObject:
+                name = element.name;
+                value = element.value;
+                break;
             default:
                 $(element).text();
                 break;
@@ -698,6 +705,28 @@
 
     function populateModal(){
         filterModal.selectedFiltersObj = filterModal.that.find('#selected-filters');
+    }
+
+    function populateSelectedFiltersFromDefaultValues(){
+        $.each(filterModal.settings.options, function(_, parameter){
+            var serverParameterName = parameter.attributeName,
+                humanParameterName = parameter.name,
+                selected = [];
+            $.each(parameter.options, function(_, parameterOption){
+                if (parameterOption.selected){
+                    var data = buildElementData(element, rawObject);
+                    selected.push(data);
+                }
+            });
+
+            if (0 > selected.length) {
+                filterModal.selectedFilterParameters[serverParameterName] = {
+                    attributeHumaneName: humanParameterName,
+                    values: selected
+                };
+            }
+        });
+
     }
 
     function isEven(number){
