@@ -300,10 +300,7 @@
 
             filterInternalHtml += tempHtml;
 
-            // TODO - collect only once . initiate the modal with data. happens every time. should block this.
-            if (-1 < $.inArray(parameter.type,[single, multiCheckBoxes])) {
-                filterModal.filters[parameter.attributeName] = parameter;
-            }
+
         });
 
         // fill other boxes with nothing if too little parameters passed
@@ -402,7 +399,7 @@
                         '<h4 class="modal-title">'+parameterName+'</h4>' +
                     '</div>' +
                     '<div class="modal-body">' +
-                        htmlForParameterOptions(parameter.options) +
+                        htmlForParameterOptions(parameter) +
                     '</div>' +
                     '<div class="modal-footer">' +
                         '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>' +
@@ -414,11 +411,23 @@
 
     }
 
-    function htmlForParameterOptions(parameterOptions) {
-        var checkBoxesHtml = '';
-        $.each(parameterOptions, function (index, filterParameter) {
+    function htmlForParameterOptions(parameter) {
+        var checkBoxesHtml = '',
+            selectedFilter,
+            selectedValues = [];
+
+        selectedFilter = filterModal.selectedFilterParameters[parameter.attributeName];
+        if (selectedFilter){
+            selectedValues = $.map(selectedFilter.values, function(data){ return data.value});
+        }
+
+        $.each(parameter.options, function (index, filterParameter) {
+            var checked = '';
+            if (existsInArray(filterParameter.value.toString(), selectedValues)){
+                checked = 'checked = "checked"'
+            }
             checkBoxesHtml += '<div class="checkbox"><label>' +
-            '<input type="checkbox" value="' + filterParameter.value + '">' + filterParameter.name +
+            '<input type="checkbox" '+ checked + ' value="' + filterParameter.value + '">' + filterParameter.name +
             '</label></div>';
         });
 
@@ -708,24 +717,36 @@
     }
 
     function populateSelectedFiltersFromDefaultValues(){
-        $.each(filterModal.settings.filterParameters, function(_, parameter){
-            var serverParameterName = parameter.attributeName,
-                humanParameterName = parameter.name,
-                selected = [];
-            $.each(parameter.options, function(_, parameterOption){
-                if (parameterOption.selected){
-                    var data = buildElementData(element, rawObject);
-                    selected.push(data);
+        if (!filterModal.initiated ) {
+
+            $.each(filterModal.settings.filterParameters, function (_, parameter) {
+                if (-1 < $.inArray(parameter.type, [single, multiCheckBoxes])) {
+                    filterModal.filters[parameter.attributeName] = parameter;
+                }
+
+
+                var serverParameterName = parameter.attributeName,
+                    humanParameterName = parameter.name,
+                    selected = [];
+                if (parameter.options) {
+                    $.each(parameter.options, function (_, parameterOption) {
+                        if (parameterOption.selected) {
+                            var data = buildElementData(parameterOption, rawObject);
+                            selected.push(data);
+                        }
+                    });
+
+                    if (0 < selected.length) {
+                        filterModal.selectedFilterParameters[serverParameterName] = {
+                            attributeHumaneName: humanParameterName,
+                            values: selected
+                        };
+                    }
                 }
             });
+        }
 
-            if (0 > selected.length) {
-                filterModal.selectedFilterParameters[serverParameterName] = {
-                    attributeHumaneName: humanParameterName,
-                    values: selected
-                };
-            }
-        });
+        filterModal.initiated = true;
 
     }
 
@@ -735,6 +756,10 @@
 
     function calcShowMoreModelName(name){
         return name.replace(/\s+/g, '') + 'ShowMoreModal'
+    }
+
+    function existsInArray(item, array){
+        return (-1 < $.inArray(item, array))
     }
 
     /////////////// Events Binding end  ////////////////////
