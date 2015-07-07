@@ -84,3 +84,6 @@ http://ohadpartuck.github.io/filter_demo/
 # Licence
 Free.
 
+# Love it?
+compliments here - ohadpartuck@gmail.com
+
