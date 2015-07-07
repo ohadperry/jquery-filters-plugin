@@ -1,7 +1,7 @@
 # Filters
 Jquery + bootstrap filters rending out of the box for backoffice use
 
-![Improvely.com](http://i.imgur.com/LbAMf3D.png)
+![Sample](https://cdn.rawgit.com/ohadpartuck/jquery-filters-plugin/master/images/simple_filter.png)
 
 # Quick Start
 ```
