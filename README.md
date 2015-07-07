@@ -63,9 +63,11 @@ Jquery + bootstrap filters rending out of the box for backoffice use
 
 # Usage
 
-* Options
-** Option 1
-** Option 2
+## Configurable Options
+* title: 'Default Filter Title',
+* maxElementsInMultiBox: 3
+* dateFormat: 'DD-MM-YYYY'
+* selectBoxHeight: 180,
 
 # Dependencies
 
@@ -76,7 +78,9 @@ Jquery + bootstrap filters rending out of the box for backoffice use
 * improvely (css only)
 
 
-
 # Demo
 http://ohadpartuck.github.io/filter_demo/
+
+# Licence
+Free.
 
