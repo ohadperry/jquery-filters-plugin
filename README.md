@@ -63,9 +63,15 @@ Jquery + bootstrap filters rending out of the box for backoffice use
 
 # Dependencies
 
+* Jquery
+* Bootstrap 3 
+* daterangepicker js 
+* moment js
+* improvely (css only)
 
 # Usage
 
+## Options
 
 # Demo
 http://ohadpartuck.github.io/filter_demo/
