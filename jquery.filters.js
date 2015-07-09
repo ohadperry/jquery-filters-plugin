@@ -67,8 +67,8 @@
         filterInternalHtml = buildFiltersHtml();
 
         searchButton =  '<div class="clearfix"></div>' +
-        '<div id="filter-search-button" class="row" style="float: right; margin-top: 20px;">' +
-        '<button style="padding: 10px 112px" class="btn btn-lg btn-block btn-success">Search</button>' +
+        '<div class="row" style="float: right; margin-top: 20px;">' +
+        '<button id="filter-search-button" style="padding: 10px 112px" class="btn btn-lg btn-block btn-success">Search</button>' +
         '</div> ';
 
         title = '<legend>'+ settings.title+'</legend>';
