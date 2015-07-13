@@ -29,6 +29,7 @@
             maxElementsInMultiBox: 3,
             dateFormat: dateTimeFormat,
             selectBoxHeight: 180,
+            borderColor: '#ddd'
         }, options);
 
         filterModal.that = this;
@@ -56,7 +57,7 @@
             selectedFilters;
 
         // External Style
-        filterModal.that.css({border: '1px solid gray', display: 'inline-block', float: 'left', padding: '33px', "border-radius": '5px'});
+        filterModal.that.css({border: '1px solid ' + filterModal.settings.borderColor , display: 'inline-block', float: 'left', padding: '33px', "border-radius": '5px'});
         filterModal.that.addClass('col-md-12');
 
         //building the selected filters html
@@ -74,13 +75,13 @@
         title = '<legend>'+ settings.title+'</legend>';
 
         return '<div class="row"><i id="show-hide-filter" class="fa fa-chevron-up show-hide-filter-js" style="float: right;"></i></div>' +
-                '<fieldset id="bootstrap-filter">' +
-                    selectedFilters +
-                    '<div id="filters-and-button">' +
-                        filterInternalHtml +
-                        searchButton +
-                    '</div>' +
-                '</fieldset>'
+            '<fieldset id="bootstrap-filter">' +
+            selectedFilters +
+            '<div id="filters-and-button">' +
+            filterInternalHtml +
+            searchButton +
+            '</div>' +
+            '</fieldset>'
     }
 
     function buildSingleFilterHtml(parameter, index){
@@ -120,7 +121,7 @@
                 break;
         }
 
-        return '<div class="select-parameter-box '+ parameter.type+ ' " style="border: 1px solid #000000; height: '+ height + '; padding: 20px; width: 100%; float: left;">' +
+        return '<div class="select-parameter-box '+ parameter.type+ ' " style="border: 1px solid '+filterModal.settings.borderColor+'; height: '+ height + '; padding: 20px; width: 100%; float: left;">' +
             backButton +
             filterTitleHtml +
             '<div class="group-surround">' +
@@ -196,7 +197,7 @@
             var dateRange = dateRangeElement.daterangepicker(
                 {
                     format: filterModal.settings.dateFormat,
-                    startDate: moment().subtract(30, 'days').format(filterModal.settings.dateFormat),
+                    startDate: moment().subtract(7, 'days').format(filterModal.settings.dateFormat),
                     endDate:  moment().format(filterModal.settings.dateFormat)
                 },
                 function (start, end, label) {
@@ -237,11 +238,11 @@
             selectedValue = (1 < selectedParameter.values.length) ? '(' + selectedParameter.values.length + ')' : selectedParameter.values[0].name;
 
             html += '<div class="selectbox pull-left active" data-attribute="'+ serverName +'" ' +
-                        'style="padding: 10px; margin-right: 10px; margin-bottom: 10px; ;border: 1px solid #000000">'  +
-                        '<a data-toggle="modal" data-target="#'+showMoreModelName+'">'+ humanParameterName + ': '+  selectedValue +'</a>' +
-                                '<button type="button" class="close remove-filter" aria-label="Close" style="padding: 0 10px 0 15px; line-height: 0.75">' +
-                                '<span aria-hidden="true">&times;</span></button>' +
-                        '</div>';
+            'style="padding: 10px; margin-right: 10px; margin-bottom: 10px; ;border: 1px solid '+filterModal.settings.borderColor+'">'  +
+            '<a data-toggle="modal" data-target="#'+showMoreModelName+'">'+ humanParameterName + ': '+  selectedValue +'</a>' +
+            '<button type="button" class="close remove-filter" aria-label="Close" style="padding: 0 10px 0 15px; line-height: 0.75">' +
+            '<span aria-hidden="true">&times;</span></button>' +
+            '</div>';
 
             parameter = filterModal.filters[serverName];
             html += showMoreHiddenPopUpHtml(parameter.name, showMoreModelName, parameter);
@@ -251,7 +252,7 @@
     }
 
     function buildFiltersHtml(){
-        var filterInternalHtml = '<div class="row" style="border: 1px solid #000000">',
+        var filterInternalHtml = '<div class="row" style="border: 1px solid '+filterModal.settings.borderColor+'">',
             additionalFilterHtml = '',
             realIndex = 0,
             tempHtml,
@@ -289,10 +290,10 @@
                     showMoreModelName = calcShowMoreModelName(parameter.name);
                     tempHtml = showMoreHiddenPopUpHtml(parameter.name, showMoreModelName, parameter);
                     additionalFilterHtml += '<div class="checkbox"><a data-toggle="modal" data-target="#'+
-                                                showMoreModelName+'" data-attribute="'+
-                                                parameter.attributeName+'">'+parameter.name+'</a>' +
-                                            '</div>' +
-                                            tempHtml;
+                    showMoreModelName+'" data-attribute="'+
+                    parameter.attributeName+'">'+parameter.name+'</a>' +
+                    '</div>' +
+                    tempHtml;
                 }
             }
         });
@@ -300,12 +301,12 @@
             additionalFilterHtml += '<h4>No additional filters</h4>'
         }
 
-        filterInternalHtml +='<div class="select-parameter-box  " style="border: 1px solid #000000; height: '+filterModal.settings.selectBoxHeight *2+'px; padding: 20px; width: 25%; float: left;">' +
-                                'Additional Filters' +
-                                    '<div class="group-surround">' +
-                                        additionalFilterHtml +
-                                    '</div>' +
-                                '</div>' ;
+        filterInternalHtml +='<div class="select-parameter-box  " style="border: 1px solid '+filterModal.settings.borderColor+'; height: '+filterModal.settings.selectBoxHeight *2+'px; padding: 20px; width: 25%; float: left;">' +
+        'Additional Filters' +
+        '<div class="group-surround">' +
+        additionalFilterHtml +
+        '</div>' +
+        '</div>' ;
 
         filterInternalHtml += '</div>';
 
@@ -325,7 +326,7 @@
 
         if (isEven(index)){
             if (entirePageFilter(index)){
-               width = 100;  // the filter will span on the entire page
+                width = 100;  // the filter will span on the entire page
             }else{
                 width = 25;
             }
@@ -351,20 +352,20 @@
     function showMoreHiddenPopUpHtml(parameterName, showMoreModelName, parameter){
         return '<div id="'+showMoreModelName+'" class="modal fade in">'+
             '<div class="modal-dialog">' +
-                '<div class="modal-content">' +
-                    '<div class="modal-header">' +
-                        '<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>' +
-                        '<div data-attribute="'+ parameter.attributeName+'" class="title" style="visibility: hidden;">'+ parameterName +' </div>' +
-                        '<h4 class="modal-title">'+parameterName+'</h4>' +
-                    '</div>' +
-                    '<div class="modal-body">' +
-                        htmlForParameterOptions(parameter) +
-                    '</div>' +
-                    '<div class="modal-footer">' +
-                        '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>' +
-                        '<button type="button" class="btn btn-primary multi-popup-save-changes-js">Apply Changes</button>' +
-                    '</div>' +
-                '</div><!-- /.modal-content -->'+
+            '<div class="modal-content">' +
+            '<div class="modal-header">' +
+            '<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>' +
+            '<div data-attribute="'+ parameter.attributeName+'" class="title" style="visibility: hidden;">'+ parameterName +' </div>' +
+            '<h4 class="modal-title">'+parameterName+'</h4>' +
+            '</div>' +
+            '<div class="modal-body">' +
+            htmlForParameterOptions(parameter) +
+            '</div>' +
+            '<div class="modal-footer">' +
+            '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>' +
+            '<button type="button" class="btn btn-primary multi-popup-save-changes-js">Apply Changes</button>' +
+            '</div>' +
+            '</div><!-- /.modal-content -->'+
             '</div><!-- /.modal-dialog -->' +
             '</div><!-- /.modal -->';
 
@@ -556,7 +557,7 @@
                     humanParameterName = getAttributeHumanName(selectBox),
                     searchFor = getSearchParameter(inputType);
 
-                 //TODO - find a better way to collect the data
+                //TODO - find a better way to collect the data
                 $(selectBox).find(searchFor).each(function (_, inputElement) {
                     var value = $(inputElement).val();
                     if (value) {
