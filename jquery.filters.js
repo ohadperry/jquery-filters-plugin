@@ -185,7 +185,7 @@
 
         //rendering a show more popup if needed
         if ('' != showMoreButton){
-            html += showMoreHiddenPopUpHtml(name, showMoreModelName, parameter);
+            html += showMoreHiddenPopUpHtml(name, showMoreModelName, parameter, filteredOptions);
         }
 
         return html;
@@ -349,7 +349,7 @@
         return index < 0
     }
 
-    function showMoreHiddenPopUpHtml(parameterName, showMoreModelName, parameter){
+    function showMoreHiddenPopUpHtml(parameterName, showMoreModelName, parameter, filteredOptions){
         return '<div id="'+showMoreModelName+'" class="modal fade in">'+
             '<div class="modal-dialog">' +
             '<div class="modal-content">' +
@@ -359,7 +359,7 @@
             '<h4 class="modal-title">'+parameterName+'</h4>' +
             '</div>' +
             '<div class="modal-body">' +
-            htmlForParameterOptions(parameter) +
+            htmlForParameterOptions(parameter, filteredOptions) +
             '</div>' +
             '<div class="modal-footer">' +
             '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>' +
@@ -371,9 +371,10 @@
 
     }
 
-    function htmlForParameterOptions(parameter) {
+    function htmlForParameterOptions(parameter, filteredOptions) {
         var checkBoxesHtml = '',
             selectedFilter,
+            finalOptions = (undefined == filteredOptions) ? parameter.options : filteredOptions,
             selectedValues = [],
             relatedTo;
 
@@ -382,7 +383,8 @@
             selectedValues = $.map(selectedFilter.values, function(data){ return data.value});
         }
 
-        $.each(parameter.options, function (index, filterParameter) {
+
+        $.each(finalOptions, function (index, filterParameter) {
             var checked = '';
             if (existsInArray(filterParameter.value.toString(), selectedValues)){
                 checked = 'checked = "checked"'
