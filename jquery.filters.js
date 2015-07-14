@@ -233,7 +233,8 @@
             humanParameterName,
             showMoreModelName,
             selectedValue,
-            parameter;
+            parameter,
+            filteredOptions;
 
         populateSelectedFiltersFromDefaultValues();
 
@@ -250,7 +251,8 @@
             '</div>';
 
             parameter = filterModal.filters[serverName];
-            html += showMoreHiddenPopUpHtml(parameter.name, showMoreModelName, parameter);
+            filteredOptions = filterOptionsByDateAndRelatedToFilters(parameter);
+            html += showMoreHiddenPopUpHtml(parameter.name, showMoreModelName, parameter, filteredOptions);
         });
 
         return html
@@ -261,7 +263,8 @@
             additionalFilterHtml = '',
             realIndex = 0,
             tempHtml,
-            showMoreModelName;
+            showMoreModelName,
+            filteredOptions;
 
         // first 6 filters
         $.each(filterModal.settings.filterParameters, function(index, parameter){
@@ -283,6 +286,7 @@
         }
 
         //additional filters
+
         realIndex = 0;
         $.each(filterModal.settings.filterParameters, function(index, parameter){
             if (!shouldNotRenderParameter(parameter)){
@@ -293,7 +297,8 @@
                     additionalFilterHtml += '';
                 }else{
                     showMoreModelName = calcShowMoreModelName(parameter.name);
-                    tempHtml = showMoreHiddenPopUpHtml(parameter.name, showMoreModelName, parameter);
+                    filteredOptions = filterOptionsByDateAndRelatedToFilters(parameter);
+                    tempHtml = showMoreHiddenPopUpHtml(parameter.name, showMoreModelName, parameter, filteredOptions);
                     additionalFilterHtml += '<div class="checkbox"><a data-toggle="modal" data-target="#'+
                     showMoreModelName+'" data-attribute="'+
                     parameter.attributeName+'">'+parameter.name+'</a>' +
@@ -645,6 +650,22 @@
                 break;
         }
 
+    }
+
+    function filterOptionsByDateAndRelatedToFilters(parameter){
+        var filteredOptions;
+
+        if (filterModal.startTime || filterModal.endTime) {
+            filteredOptions = filterOptionsByDateRange(parameter.options);
+        }else{
+            filteredOptions = parameter.options;
+        }
+
+        // filtering out by relatedTo, if related To selected.
+        // for example, not showing BMW option if filter ASIA was selected
+        filteredOptions = filterOutSelectedRelatedTo(filteredOptions);
+
+        return filteredOptions;
     }
 
     function filterOptionsByDateRange(options){
