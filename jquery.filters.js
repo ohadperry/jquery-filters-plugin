@@ -128,7 +128,7 @@
             specificHtml +
             '</div>' +
             '</div>'
-    };
+    }
 
     function renderTextInput(parameter, name){
         return '<input style="margin: 5px 0" class="form-control" placeholder="'+ (parameter.placeholder || name) + '">';
@@ -159,11 +159,16 @@
             filteredOptions = [],
             maxElementsToShow = filterModal.settings.maxElementsInMultiBox ;
 
+        //filtering out by date
         if (filterModal.startTime || filterModal.endTime) {
             filteredOptions = filterOptionsByDateRange(parameter.options);
         }else{
             filteredOptions = parameter.options;
         }
+
+        // filtering out by relatedTo, if related To selected.
+        // for example, not showing BMW option if filter ASIA was selected
+        filteredOptions = filterOutSelectedRelatedTo(filteredOptions);
 
         $.each(filteredOptions, function(index, filterParameter){
             var display = 'block';
@@ -654,6 +659,55 @@
                 }
             }
         });
+    }
+
+    function filterOutSelectedRelatedTo(options){
+        var result = [],
+            relevantSelectedFilter;
+
+        $.each(options, function(_, option){
+            if (option.relatedTo){
+                $.each(option.relatedTo, function(relatedToName, relatedToValue){
+                    relevantSelectedFilter = getRelevantSelectedFilter(relatedToName);
+                    if (relevantSelectedFilter) {
+                        if (existsInSelectedFilter(relevantSelectedFilter.values, relatedToValue.value)) {
+                            result.push(option)
+                        }
+                    }else{
+                        result.push(option)
+                    }
+                })
+            }else{
+                result.push(option)
+            }
+        });
+
+        return result;
+    }
+
+    function getRelevantSelectedFilter(relatedToName){
+        var relevantFilter = undefined;
+
+        $.each(filterModal.selectedFilterParameters, function(filterName, filter){
+            if (relatedToName == filterName){
+                relevantFilter = filter;
+                return true;
+            }
+        });
+        return relevantFilter;
+    }
+
+    function existsInSelectedFilter(selectFilterValues, relatedToValue){
+        var exists = false,
+            selectedValues;
+
+        selectedValues = selectFilterValues.map(function(element) { return element.value });
+        if (existsInArray(relatedToValue, selectedValues)){
+            exists = true;
+            return true;
+        }
+
+        return exists;
     }
 
     function addSingleSelectedToDataModal(selectedItem ,selectBox){
