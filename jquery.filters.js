@@ -454,6 +454,8 @@
         bindChangeDate();
         bindExpandCollapse();
         bindBackButton();
+        bindEnterButton();
+
     }
 
     function bindMultiPopup(){
@@ -538,17 +540,20 @@
     function bindSearchClicked() {
 
         $('#filter-search-button').on('click', function(){
-            var selectedFilters;
-
-            selectedFilters = collectSelectedFilters();
-
-            if (undefined == filterModal.searchClickedCallback){
-                alert('no search callback is defined. send one via the searchClickedCallback parameter');
-            }
-
-            filterModal.searchClickedCallback(selectedFilters)
-
+            searchClickedCallback()
         });
+    }
+
+    function searchClickedCallback(){
+        var selectedFilters;
+
+        selectedFilters = collectSelectedFilters();
+
+        if (undefined == filterModal.searchClickedCallback){
+            alert('no search callback is defined. send one via the searchClickedCallback parameter');
+        }
+
+        filterModal.searchClickedCallback(selectedFilters)
     }
 
     function collectSelectedFilters(){
@@ -637,6 +642,16 @@
         })
     }
 
+    function bindEnterButton(){
+        $(document).keypress(function( event ) {
+            if (event.which == 13) {  //13 means return was pressed
+                event.preventDefault();
+                searchClickedCallback()
+            }
+        });
+
+
+    }
 
     function getSearchParameter(inputType){
         switch(inputType) {
