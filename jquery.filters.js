@@ -12,6 +12,10 @@
         showSingleFilterStatus = 'show-single',
         title;
 
+    $.bootstrapFilter = {
+        filterModal: {}
+    };
+
 
     var filterModal = {
         that: null,
@@ -29,7 +33,8 @@
             maxElementsInMultiBox: 3,
             dateFormat: dateTimeFormat,
             selectBoxHeight: 180,
-            borderColor: '#ddd'
+            borderColor: '#ddd',
+            showSearchButton: true,
         }, options);
 
         filterModal.that = this;
@@ -40,6 +45,7 @@
         renderRateRangeIfNeeded();
         bindFilterClicks();
         populateModal();
+        exposeFilterModal();
 
         return this;
     };
@@ -48,12 +54,16 @@
         filterModal.that.bootstrapFilter(filterModal.settings);
     };
 
+    function exposeFilterModal(){
+        $.bootstrapFilter.filterModal = filterModal;
+    }
+
     /////////////// html rendering here  ////////////////////
     function buildHtml(settings){
 
         var selectedFiltersHtml,
             filterInternalHtml,
-            searchButton,
+            searchButton = '',
             selectedFilters;
 
         // External Style
@@ -67,10 +77,12 @@
         //building the filters html
         filterInternalHtml = buildFiltersHtml();
 
-        searchButton =  '<div class="clearfix"></div>' +
-        '<div class="row" style="float: right; margin-top: 20px;">' +
-        '<button id="filter-search-button" style="padding: 10px 112px" class="btn btn-lg btn-block btn-success">Search</button>' +
-        '</div> ';
+        if (filterModal.settings.showSearchButton) {
+            searchButton = '<div class="clearfix"></div>' +
+            '<div class="row" style="float: right; margin-top: 20px;">' +
+            '<button id="filter-search-button" style="padding: 10px 112px" class="btn btn-lg btn-block btn-success">Search</button>' +
+            '</div> ';
+        }
 
         title = '<legend>'+ settings.title+'</legend>';
 
