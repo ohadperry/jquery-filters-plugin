@@ -35,6 +35,8 @@
             selectBoxHeight: 180,
             borderColor: '#ddd',
             showSearchButton: true,
+            showBorders: true,
+            globalPadding: '33px',
         }, options);
 
         filterModal.that = this;
@@ -67,8 +69,13 @@
             selectedFilters;
 
         // External Style
-        filterModal.that.css({border: '1px solid ' + filterModal.settings.borderColor , display: 'inline-block', float: 'left', padding: '33px', "border-radius": '5px'});
+        filterModal.that.css({ display: 'inline-block', float: 'left',  "border-radius": '5px'});
+        if (filterModal.settings.showBorders){
+            filterModal.that.css({border: '1px solid ' + filterModal.settings.borderColor })
+        }
+        filterModal.that.css({padding: filterModal.settings.globalPadding});
         filterModal.that.addClass('col-md-12');
+        filterModal.that.addClass('filter-main');
 
         //building the selected filters html
         selectedFiltersHtml = buildSelectedFiltersHtml();
