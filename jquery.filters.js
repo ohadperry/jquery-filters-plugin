@@ -223,6 +223,7 @@
             cb(moment().subtract(29, 'days'), moment());
 
             dateRangeElement.daterangepicker({
+                format: filterModal.settings.dateFormat,
                 ranges: {
                     'Today': [moment(), moment().add(1, 'days')],
                     'Yesterday': [moment().subtract(1, 'days'), moment()],
