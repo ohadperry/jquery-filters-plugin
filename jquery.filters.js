@@ -218,24 +218,21 @@
     function renderRateRangeIfNeeded(){
         var dateRangeElement = $('input[name="'+dateRangeName+'"]');
         if (dateRangeElement.length >0 ) {
-            var dateRange = dateRangeElement.daterangepicker(
-                {
-                    format: filterModal.settings.dateFormat,
-                    startDate: moment().subtract(7, 'days').format(filterModal.settings.dateFormat),
-                    endDate:  moment().format(filterModal.settings.dateFormat)
-                },
-                function (start, end, label) {
-                    console.log('change');
+            function cb(start, end) {
+                $('input[name="'+dateRangeName+'"] span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+            }
+            cb(moment().subtract(29, 'days'), moment());
+
+            dateRangeElement.daterangepicker({
+                ranges: {
+                    'Today': [moment(), moment().add(1, 'days')],
+                    'Yesterday': [moment().subtract(1, 'days'), moment()],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
                 }
-            );
-
-            if (filterModal.startTime){
-                dateRange.data('daterangepicker').setStartDate(filterModal.startTime);
-            }
-
-            if (filterModal.endTime){
-                dateRange.data('daterangepicker').setEndDate(filterModal.endTime);
-            }
+            }, cb);
         }
     }
 
