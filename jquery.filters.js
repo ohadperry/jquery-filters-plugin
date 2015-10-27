@@ -123,7 +123,7 @@
                 specificHtml = renderTextInput(parameter, name);
                 break;
             case dateRange:
-                specificHtml = renderDateRange();
+                specificHtml = renderDateRange(parameter);
                 break;
             case multiCheckBoxes:
                 specificHtml = renderMultiSelect(parameter, name);
@@ -150,13 +150,24 @@
     }
 
     function renderTextInput(parameter, name){
-        return '<input style="margin: 5px 0" class="form-control" placeholder="'+ (parameter.placeholder || name) + '">';
+        var value = '';
+        if (filterModal.selectedFilterParameters[parameter.attributeName]){
+            value = filterModal.selectedFilterParameters[parameter.attributeName].values[0].value
+        }
+
+        return '<input style="margin: 5px 0" class="form-control text-input-js" value="'+value+'" placeholder="'+ (parameter.placeholder || name) + '">';
     }
 
-    function renderDateRange(){
+    function renderDateRange(parameter){
+
+        var value = '';
+        if (filterModal.selectedFilterParameters[parameter.attributeName]){
+            value = filterModal.selectedFilterParameters[parameter.attributeName].values[0].value
+        }
+
         return '<div id="daterange" style="float: left; margin: 5px 0;" class="selectbox active">'  +
             '<i class="fa fa-calendar"></i>' +
-            '<input type="text" data-time-picker="true" name="'+dateRangeName+'" style="width: 170px; margin-left: 5px;">' +
+            '<input type="text" data-time-picker="true" value="'+value+'" name="'+dateRangeName+'" style="width: 170px; margin-left: 5px;">' +
             '</div>';
     }
 
@@ -218,24 +229,23 @@
     function renderRateRangeIfNeeded(){
         var dateRangeElement = $('input[name="'+dateRangeName+'"]');
         if (dateRangeElement.length >0 ) {
-            var dateRange = dateRangeElement.daterangepicker(
-                {
-                    format: filterModal.settings.dateFormat,
-                    startDate: moment().subtract(7, 'days').format(filterModal.settings.dateFormat),
-                    endDate:  moment().format(filterModal.settings.dateFormat)
-                },
-                function (start, end, label) {
-                    console.log('change');
+            function cb(start, end) {
+                $('input[name="'+dateRangeName+'"]').html(start.format(filterModal.settings.dateFormat) + ' - ' + end.format(filterModal.settings.dateFormat));
+            }
+            cb(moment().subtract(29, 'days'), moment().add(1, 'days'));
+
+            dateRangeElement.daterangepicker({
+                format: filterModal.settings.dateFormat,
+                ranges: {
+                    'Today': [moment(), moment().add(1, 'days')],
+                    'Yesterday': [moment().subtract(1, 'days'), moment()],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment().add(1, 'days')],
+                    'Last 30 Days': [moment().subtract(29, 'days'), moment().add(1, 'days')],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                    'Last 3 Months': [moment().subtract(3, 'month').startOf('month'), moment().add(1, 'days')]
                 }
-            );
-
-            if (filterModal.startTime){
-                dateRange.data('daterangepicker').setStartDate(filterModal.startTime);
-            }
-
-            if (filterModal.endTime){
-                dateRange.data('daterangepicker').setEndDate(filterModal.endTime);
-            }
+            }, cb);
         }
     }
 
@@ -244,6 +254,10 @@
 
     //should not render filter if is already selected
     function shouldNotRenderParameter(parameter){
+        if ($.inArray(parameter.type, [dateRange, textType]) > -1){
+            return false
+        }
+
         return undefined != filterModal.selectedFilterParameters[parameter.attributeName];
     }
 
@@ -262,16 +276,20 @@
             showMoreModelName = calcShowMoreModelName(selectedParameter.attributeHumaneName);
             selectedValue = (1 < selectedParameter.values.length) ? '(' + selectedParameter.values.length + ')' : selectedParameter.values[0].name;
 
-            html += '<div class="selectbox pull-left active" data-attribute="'+ serverName +'" ' +
-            'style="padding: 10px; margin-right: 10px; margin-bottom: 10px; ;border: 1px solid '+filterModal.settings.borderColor+'">'  +
-            '<a data-toggle="modal" data-target="#'+showMoreModelName+'">'+ humanParameterName + ': '+  selectedValue +'</a>' +
-            '<button type="button" class="close remove-filter" aria-label="Close" style="padding: 0 10px 0 15px; line-height: 0.75">' +
-            '<span aria-hidden="true">&times;</span></button>' +
-            '</div>';
-
             parameter = filterModal.filters[serverName];
-            filteredOptions = filterOptionsByDateAndRelatedToFilters(parameter);
-            html += showMoreHiddenPopUpHtml(parameter.name, showMoreModelName, parameter, filteredOptions);
+            // errors on date range
+            if (parameter) {
+
+                html += '<div class="selectbox pull-left active" data-attribute="'+ serverName +'" ' +
+                'style="padding: 10px; margin-right: 10px; margin-bottom: 10px; ;border: 1px solid '+filterModal.settings.borderColor+'">'  +
+                '<a data-toggle="modal" data-target="#'+showMoreModelName+'">'+ humanParameterName + ': '+  selectedValue +'</a>' +
+                '<button type="button" class="close remove-filter" aria-label="Close" style="padding: 0 10px 0 15px; line-height: 0.75">' +
+                '<span aria-hidden="true">&times;</span></button>' +
+                '</div>';
+
+                filteredOptions = filterOptionsByDateAndRelatedToFilters(parameter);
+                html += showMoreHiddenPopUpHtml(parameter.name, showMoreModelName, parameter, filteredOptions);
+            }
         });
 
         return html
@@ -391,7 +409,7 @@
             htmlForParameterOptions(parameter, filteredOptions) +
             '</div>' +
             '<div class="modal-footer">' +
-            '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>' +
+            '<button type="button" class="btn btn-default multi-popup-close-js" data-dismiss="modal">Close</button>' +
             '<button type="button" class="btn btn-primary multi-popup-save-changes-js">Apply Changes</button>' +
             '</div>' +
             '</div><!-- /.modal-content -->'+
@@ -469,12 +487,20 @@
         bindMultiPopup();
         bindSingleClick();
         bindRemoveSelectedFilter();
+        bindMultiPopupClose();
         bindMultiSelectFromMain();
         bindChangeDate();
+        bindInputChange();
         bindExpandCollapse();
         bindBackButton();
         bindEnterButton();
 
+    }
+
+    function bindInputChange(){
+         $('.text-input-js').keyup(function(){
+             addInputSelectedToDataModal($(this).closest('.select-parameter-box'))
+         })
     }
 
     function bindMultiPopup(){
@@ -486,8 +512,9 @@
             result = addMultiSelectedToDataModal(popup);
 
             if (0 < result.checked.length) {
-                //close the popup
-                popup.modal('toggle');
+                popup.modal('hide');
+                $('body').removeClass('modal-open');
+                $('.modal-backdrop').remove();
 
                 setTimeout(function(){
                     //refresh the filter
@@ -496,6 +523,18 @@
 
 
             }
+
+        })
+    }
+
+    function bindMultiPopupClose(){
+        $('.multi-popup-close-js').on('click', function () {
+            var popup = $(this).closest('.modal');
+
+            //close the popup
+            popup.modal('hide');
+            $('body').removeClass('modal-open');
+            $('.modal-backdrop').remove();
 
         })
     }
@@ -589,6 +628,8 @@
 
         $.each([textType, dateRange], function(_, inputType) {
             $('.select-parameter-box.' + inputType).each(function (_, selectBox) {
+
+                //TODO replace this with genericCollect
                 var serverParameterName = getAttributeBackendName(selectBox),
                     humanParameterName = getAttributeHumanName(selectBox),
                     searchFor = getSearchParameter(inputType);
@@ -610,6 +651,35 @@
         console.log(filterModal.selectedFilterParameters);
 
         return $.extend(DoNotSaveThisInTheSelectedFiltered, filterModal.selectedFilterParameters)
+    }
+
+
+    function genericCollect(selectBox, inputType) {
+        var tempValues = [],
+            DoNotSaveThisInTheSelectedFiltered = {};
+
+        var serverParameterName = getAttributeBackendName(selectBox),
+            humanParameterName = getAttributeHumanName(selectBox),
+            searchFor = getSearchParameter(inputType);
+
+        //TODO - find a better way to collect the data
+        $(selectBox).find(searchFor).each(function (_, inputElement) {
+            var value = $(inputElement).val();
+            if (value) {
+                tempValues.push({value: value}); // TODO pass also name here
+            }
+        });
+        if (0 < tempValues.length) {
+            DoNotSaveThisInTheSelectedFiltered[serverParameterName] = {attributeHumaneName: humanParameterName, values: tempValues};
+        }
+
+        return {value: DoNotSaveThisInTheSelectedFiltered[serverParameterName], serverParameterName: serverParameterName}
+    }
+
+
+    function addInputSelectedToDataModal(selectBox){
+        var data = genericCollect(selectBox, textType);
+        filterModal.selectedFilterParameters[data.serverParameterName] = data.value
     }
 
     function bindSingleClick(){
@@ -638,12 +708,18 @@
 
     function bindChangeDate(){
         $('.applyBtn').on('click',function(){
+
             filterModal.startTime = $('input[name=daterangepicker_start]').last().val();
             filterModal.endTime = $('input[name=daterangepicker_end]').last().val();
 
             //re render with dates filter
             filterModal.that.renderFilter();
-        })
+        });
+
+        $('#daterange').on('apply.daterangepicker', function(ev, picker) {
+            addDateSelectedToDataModal($(this).closest('.select-parameter-box'));
+        });
+
     }
 
     function bindExpandCollapse(){
@@ -790,6 +866,11 @@
         filterModal.selectedFilterParameters[serverParameterName] = { attributeHumaneName: humanParameterName, values: optionsResult.checked};
 
         return {checked: optionsResult.checked}
+    }
+
+    function addDateSelectedToDataModal(selectBox){
+        var data = genericCollect(selectBox, dateRange);
+        filterModal.selectedFilterParameters[data.serverParameterName] = data.value
     }
 
     function resetShowSingleFilterIfNeeded(){
