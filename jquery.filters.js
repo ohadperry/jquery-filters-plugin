@@ -679,7 +679,11 @@
 
     function addInputSelectedToDataModal(selectBox){
         var data = genericCollect(selectBox, textType);
-        filterModal.selectedFilterParameters[data.serverParameterName] = data.value
+        if (data.value) {
+            filterModal.selectedFilterParameters[data.serverParameterName] = data.value
+        }else{
+            delete filterModal.selectedFilterParameters[data.serverParameterName];
+        }
     }
 
     function bindSingleClick(){
