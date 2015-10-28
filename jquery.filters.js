@@ -423,13 +423,17 @@
             selectedFilter,
             finalOptions = (undefined == filteredOptions) ? parameter.options : filteredOptions,
             selectedValues = [],
-            relatedTo;
+            relatedTo,
+            filterInputBox;
 
         selectedFilter = filterModal.selectedFilterParameters[parameter.attributeName];
         if (selectedFilter){
             selectedValues = $.map(selectedFilter.values, function(data){ return data.value});
         }
 
+
+        // TODO - add an input box to filter not relevant results as we go along
+        filterInputBox = '<input class="search-filters search-filters-js" placeholder="search">';
 
         $.each(finalOptions, function (index, filterParameter) {
             var checked = '';
@@ -446,7 +450,7 @@
             '</label></div>';
         });
 
-        return checkBoxesHtml;
+        return filterInputBox + checkBoxesHtml;
     }
 
     function relateToRender(filterParameter){
@@ -494,7 +498,29 @@
         bindExpandCollapse();
         bindBackButton();
         bindEnterButton();
+        bindSearchFilterType();
 
+    }
+
+
+    //in popup. filter out not relevant options while the user types in
+    function bindSearchFilterType(){
+        $('.search-filters-js').keyup(function(){
+            var text = $(this).val().toLowerCase(),
+                selectBox = $(this).closest('.select-parameter-box');
+
+            selectBox.find('.modal-body label').each(function(i, label){
+                if (text == ''){
+                    $(label).closest('.checkbox').show()
+                }else {
+                    if ($(label).text().toLowerCase().indexOf(text) >= 0){
+                        $(label).closest('.checkbox').show()
+                    } else {
+                        $(label).closest('.checkbox').hide()
+                    }
+                }
+            })
+        })
     }
 
     function bindInputChange(){
@@ -679,7 +705,11 @@
 
     function addInputSelectedToDataModal(selectBox){
         var data = genericCollect(selectBox, textType);
-        filterModal.selectedFilterParameters[data.serverParameterName] = data.value
+        if (data.value) {
+            filterModal.selectedFilterParameters[data.serverParameterName] = data.value
+        }else{
+            delete filterModal.selectedFilterParameters[data.serverParameterName];
+        }
     }
 
     function bindSingleClick(){
