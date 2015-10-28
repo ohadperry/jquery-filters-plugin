@@ -166,7 +166,6 @@
         }
 
         return '<div id="daterange" style="float: left; margin: 5px 0;" class="selectbox active">'  +
-            '<i class="fa fa-calendar"></i>' +
             '<input type="text" data-time-picker="true" value="'+value+'" name="'+dateRangeName+'" style="width: 170px; margin-left: 5px;">' +
             '</div>';
     }
@@ -230,8 +229,9 @@
         var dateRangeElement = $('input[name="'+dateRangeName+'"]');
         if (dateRangeElement.length >0 ) {
             function cb(start, end) {
-                $('input[name="'+dateRangeName+'"]').html(start.format(filterModal.settings.dateFormat) + ' - ' + end.format(filterModal.settings.dateFormat));
+                $('input[name="' + dateRangeName + '"]').html(start.format(filterModal.settings.dateFormat) + ' - ' + end.format(filterModal.settings.dateFormat));
             }
+
             cb(moment().subtract(29, 'days'), moment().add(1, 'days'));
 
             dateRangeElement.daterangepicker({
@@ -243,10 +243,12 @@
                     'Last 30 Days': [moment().subtract(29, 'days'), moment().add(1, 'days')],
                     'This Month': [moment().startOf('month'), moment().endOf('month')],
                     'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
-                    'Last 3 Months': [moment().subtract(3, 'month').startOf('month'), moment().add(1, 'days')]
-                }
+                    'Last 3 Months': [moment().subtract(3, 'month').startOf('month'), moment().add(1, 'days')],
+                }, locale: {cancelLabel: 'Clear'}
+
             }, cb);
         }
+
     }
 
 
@@ -751,6 +753,12 @@
             addDateSelectedToDataModal($(this).closest('.select-parameter-box'));
         });
 
+        $('#daterange').on('cancel.daterangepicker', function(ev, picker) {
+            //do something, like clearing an input
+            $('#daterange input').val('');
+            addDateSelectedToDataModal($(this).closest('.select-parameter-box'));
+        });
+
     }
 
     function bindExpandCollapse(){
@@ -775,8 +783,6 @@
                 searchClickedCallback()
             }
         });
-
-
     }
 
     function getSearchParameter(inputType){
@@ -901,7 +907,11 @@
 
     function addDateSelectedToDataModal(selectBox){
         var data = genericCollect(selectBox, dateRange);
-        filterModal.selectedFilterParameters[data.serverParameterName] = data.value
+        if (data.value) {
+            filterModal.selectedFilterParameters[data.serverParameterName] = data.value
+        }else{
+            delete filterModal.selectedFilterParameters[data.serverParameterName];
+        }
     }
 
     function resetShowSingleFilterIfNeeded(){
