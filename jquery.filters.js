@@ -44,7 +44,7 @@
         filterModal.searchClickedCallback = settings.searchClickedCallback;
 
         this.html(buildHtml(settings)).hide().fadeIn();
-        renderRateRangeIfNeeded();
+        renderDateRangeIfNeeded();
         bindFilterClicks();
         populateModal();
         exposeFilterModal();
@@ -226,7 +226,7 @@
         return html;
     }
 
-    function renderRateRangeIfNeeded(){
+    function renderDateRangeIfNeeded(){
         var dateRangeElement = $('input[name="'+dateRangeName+'"]');
         if (dateRangeElement.length >0 ) {
             function cb(start, end) {
@@ -424,7 +424,7 @@
             finalOptions = (undefined == filteredOptions) ? parameter.options : filteredOptions,
             selectedValues = [],
             relatedTo,
-            filterInputBox;
+            filterInputBox = '';
 
         selectedFilter = filterModal.selectedFilterParameters[parameter.attributeName];
         if (selectedFilter){
@@ -432,8 +432,9 @@
         }
 
 
-        // TODO - add an input box to filter not relevant results as we go along
-        filterInputBox = '<input class="search-filters search-filters-js" placeholder="search">';
+        if (finalOptions.length > 10) {
+            filterInputBox = '<input class="search-filters search-filters-js" placeholder="search">';
+        }
 
         $.each(finalOptions, function (index, filterParameter) {
             var checked = '';
@@ -507,9 +508,9 @@
     function bindSearchFilterType(){
         $('.search-filters-js').keyup(function(){
             var text = $(this).val().toLowerCase(),
-                selectBox = $(this).closest('.select-parameter-box');
+                selectBox = $(this).closest('.modal-body');
 
-            selectBox.find('.modal-body label').each(function(i, label){
+            selectBox.find('label').each(function(i, label){
                 if (text == ''){
                     $(label).closest('.checkbox').show()
                 }else {
