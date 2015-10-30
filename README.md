@@ -108,7 +108,7 @@ compliments here - ohadpartuck@gmail.com
 # Changes Log
 
 ## V0.1.1
-Added a clear button for the date range.
-Added a search box for screening filter options.
+* Added a clear button for the date range.
+* Added a search box for screening filter options.
 
 
