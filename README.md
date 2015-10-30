@@ -1,5 +1,6 @@
 # Filters
-Jquery + bootstrap filters rending out of the box for backoffice use
+Jquery + bootstrap filters rending out of the box for backoffice use.
+Latest Version 0.1.1
 
 ![Sample](https://cdn.rawgit.com/ohadpartuck/jquery-filters-plugin/master/demo/filters_demo.gif)
 
