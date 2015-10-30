@@ -100,7 +100,7 @@ Filter 2 Option2 -> Filter 1 Option2
 http://ohadpartuck.github.io/filter_demo/
 
 # Licence
-Free.
+DWYWWI (Do Whatever You Want With It).
 
 # Love it?
 compliments here - ohadpartuck@gmail.com
