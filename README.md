@@ -107,6 +107,8 @@ DWYWWI (Do Whatever You Want With It).
 compliments here - ohadpartuck@gmail.com
 
 # Changes Log
+## V0.1.2
+* added auto focus on the search input on open select modal.
 
 ## V0.1.1
 * Added a clear button for the date range.
