@@ -2,6 +2,8 @@
 Jquery + bootstrap filters rending out of the box for backoffice use.
 Stable version 0.1.1
 
+[demo](http://ohadpartuck.github.io/filter_demo/)
+
 ![Sample](https://cdn.rawgit.com/ohadpartuck/jquery-filters-plugin/master/demo/filters_demo.gif)
 
 # Quick Start
