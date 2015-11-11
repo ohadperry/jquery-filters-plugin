@@ -399,7 +399,7 @@
     }
 
     function showMoreHiddenPopUpHtml(parameterName, showMoreModelName, parameter, filteredOptions){
-        return '<div id="'+showMoreModelName+'" class="modal fade in">'+
+        return '<div id="'+showMoreModelName+'" class="modal fade in bootstrap-modal-js">'+
             '<div class="modal-dialog">' +
             '<div class="modal-content">' +
             '<div class="modal-header">' +
@@ -502,7 +502,18 @@
         bindBackButton();
         bindEnterButton();
         bindSearchFilterType();
+        bindHiddenPopupsOpened();
 
+    }
+
+
+    // looking for all the popups and attaching event listener
+    function bindHiddenPopupsOpened(){
+        $('.bootstrap-modal-js').each(function(i, modal){
+            $('#'+modal.id).on('shown.bs.modal', function (e) {
+                 $(this).find('.search-filters-js').focus()
+            })
+        });
     }
 
 
