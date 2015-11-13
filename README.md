@@ -24,7 +24,7 @@ Stable version 0.1.1
     <link rel="stylesheet" media="all" href="https://cdn.rawgit.com/ohadpartuck/jquery-filters-plugin/master/css/improvely.css">
     <link rel="stylesheet" media="all" href="https://cdn.rawgit.com/ohadpartuck/jquery-filters-plugin/v0.1.1/css/jquery.filters.css">
     <link rel="stylesheet" media="all" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-
+</head>
 <body>
   <div id="wrapper">
       <div id="filter"></div>
