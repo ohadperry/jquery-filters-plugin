@@ -20,11 +20,8 @@ Stable version 0.1.1
     <script src="https://cdn.rawgit.com/dangrossman/bootstrap-daterangepicker/master/daterangepicker.js"></script>
     <script src="https://cdn.rawgit.com/ohadpartuck/jquery-filters-plugin/v0.1.1/jquery.filters.js" type="text/javascript"></script>
 
-    <link rel="stylesheet" media="all" href="https://cdn.rawgit.com/ohadpartuck/ohadpartuck.github.io/master/filter_demo/css/docs.min.css">
     <link rel="stylesheet" media="all" href="https://cdn.rawgit.com/dangrossman/bootstrap-daterangepicker/master/daterangepicker-bs3.css">
     <link rel="stylesheet" media="all" href="https://cdn.rawgit.com/ohadpartuck/jquery-filters-plugin/master/css/improvely.css">
-    <link rel="stylesheet" media="all" href="https://cdn.rawgit.com/ohadpartuck/ohadpartuck.github.io/master/filter_demo/css/documenter_style.css">
-    <link rel="stylesheet" media="all" href="https://cdn.rawgit.com/ohadpartuck/ohadpartuck.github.io/master/filter_demo/css/prettify.css">
     <link rel="stylesheet" media="all" href="https://cdn.rawgit.com/ohadpartuck/jquery-filters-plugin/v0.1.1/css/jquery.filters.css">
     <link rel="stylesheet" media="all" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 
