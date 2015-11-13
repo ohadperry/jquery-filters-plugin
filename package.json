@@ -30,6 +30,7 @@
   },
   "homepage": "https://github.com/ohadpartuck/jquery-filters-plugin#readme",
   "dependencies": {
-    "bootstrap": "^3.3.5"
+    "bootstrap": "^3.3.5",
+    "jquery": "^2.1.4"
   }
 }
