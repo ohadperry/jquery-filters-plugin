@@ -106,6 +106,10 @@ DWYWWI (Do Whatever You Want With It).
 compliments here - ohadpartuck@gmail.com
 
 # Changes Log
+
+## V0.1.5
+adding feature - enable shift + multi select to checkboxes.
+
 ## V0.1.2
 * added auto focus on the search input on open select modal.
 
