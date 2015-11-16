@@ -37,6 +37,7 @@
             showSearchButton: true,
             showBorders: true,
             globalPadding: '33px',
+            showShiftSelectMessage: true,
         }, options);
 
         filterModal.that = this;
@@ -426,7 +427,8 @@
             finalOptions = (undefined == filteredOptions) ? parameter.options : filteredOptions,
             selectedValues = [],
             relatedTo,
-            filterInputBox = '';
+            filterInputBox = '',
+            shiftSelectMultiMessage = '';
 
         selectedFilter = filterModal.selectedFilterParameters[parameter.attributeName];
         if (selectedFilter){
@@ -436,6 +438,10 @@
 
         if (finalOptions.length > 10) {
             filterInputBox = '<input class="search-filters search-filters-js" placeholder="search">';
+            if (filterModal.settings.showShiftSelectMessage) {
+                shiftSelectMultiMessage = '<p class="gray">shift and click to select multi checkboxes</p>';
+            }
+
         }
 
         $.each(finalOptions, function (index, filterParameter) {
@@ -453,7 +459,7 @@
             '</label></div>';
         });
 
-        return filterInputBox + checkBoxesHtml;
+        return filterInputBox + shiftSelectMultiMessage + checkBoxesHtml;
     }
 
     function relateToRender(filterParameter){
