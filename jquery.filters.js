@@ -510,9 +510,14 @@
     // looking for all the popups and attaching event listener
     function bindHiddenPopupsOpened(){
         $('.bootstrap-modal-js').each(function(i, modal){
+            // enable the user to type directly in the search input
+            // without having to select it using the mouse
             $('#'+modal.id).on('shown.bs.modal', function (e) {
                  $(this).find('.search-filters-js').focus()
-            })
+            });
+
+            //enable shift + select multi checkboxes
+            $('#'+modal.id + ' input[type="checkbox"]').shiftSelectable()
         });
     }
 
@@ -762,10 +767,7 @@
 
         $('#daterange').on('apply.daterangepicker', function(ev, picker) {
             addDateSelectedToDataModal($(this).closest('.select-parameter-box'));
-        });
-
-        $('#daterange').on('cancel.daterangepicker', function(ev, picker) {
-            //do something, like clearing an input
+        }).on('cancel.daterangepicker', function(ev, picker) {
             $('#daterange input').val('');
             addDateSelectedToDataModal($(this).closest('.select-parameter-box'));
         });
@@ -949,7 +951,6 @@
                     filterModal.filters[parameter.attributeName] = parameter;
                 }
 
-
                 var serverParameterName = parameter.attributeName,
                     humanParameterName = parameter.name,
                     selected = [];
@@ -991,18 +992,18 @@
         var lastChecked,
             $boxes = this;
 
-        $boxes.click(function(evt) {
+        $boxes.click(function(event) {
             if(!lastChecked) {
                 lastChecked = this;
                 return;
             }
 
-            if(evt.shiftKey) {
-                var start = $boxes.index(this),
-                    end = $boxes.index(lastChecked);
-                $boxes.slice(Math.min(start, end), Math.max(start, end) + 1)
-                    .attr('checked', lastChecked.checked)
-                    .trigger('change');
+            if(event.shiftKey) {
+                var start = $boxes.index(this);
+                var end = $boxes.index(lastChecked);
+
+                $boxes.slice(Math.min(start,end), Math.max(start,end)+ 1).prop('checked', lastChecked.checked);
+
             }
 
             lastChecked = this;
