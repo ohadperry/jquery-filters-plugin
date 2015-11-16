@@ -1,6 +1,7 @@
 # Filters
 Jquery + bootstrap filters rending out of the box for backoffice use.
-Stable version 0.1.1
+
+<img src="https://badge.fury.io/js/backoffice-filters.png" />
 
 <a href="http://ohadpartuck.github.io/filter_demo/" target="_blank">demo</a>
 
