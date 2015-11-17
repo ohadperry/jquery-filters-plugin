@@ -75,6 +75,11 @@ No Download Needed. jQuery filters rending out of the box for backoffice use.
 * maxElementsInMultiBox: 3
 * dateFormat: 'DD-MM-YYYY'
 * selectBoxHeight: 180
+* borderColor: '#ddd'
+* showSearchButton: true
+* showBorders: true
+* globalPadding: '33px'
+* showShiftSelectMessage: true
 
 ## filter Parameters
 * name - any name you want to display
