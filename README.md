@@ -1,5 +1,5 @@
 # Filters
-Jquery + bootstrap filters rending out of the box for backoffice use.
+No Download Needed. jQuery filters rending out of the box for backoffice use.
 
 <img src="https://badge.fury.io/js/backoffice-filters.png" />
 
