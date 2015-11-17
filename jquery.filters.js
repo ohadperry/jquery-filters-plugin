@@ -10,6 +10,8 @@
         single = 'single',
         empty = 'empty',
         showSingleFilterStatus = 'show-single',
+        backofficeFiltersUrlPrefix = 'bf_',
+        realNameAttribute = 'real-name-attribute',
         title;
 
     $.bootstrapFilter = {
@@ -23,9 +25,15 @@
         filters: {},
         selectedFilterParameters: {},  //each item here is like {attributeName: 'examID', attributeHumaneName: 'exam ID', values: [{name: 'exam_id', value: '1234234'}]}
         searchClickedCallback: undefined, // a function to be executed after we click search
+        // a data structure to hold the same data as filterParameters but in a key value way ,
+        // used in url decrypt.
+        filterParametersByKeyValue: undefined,
     };
 
     $.fn.bootstrapFilter = function(options) {
+
+        // first thing, make sure we have all of our dependencies
+        libraryDependenciesValidations();
 
         // Defaults Values
         var settings = $.extend({
@@ -44,11 +52,15 @@
         filterModal.settings = settings;
         filterModal.searchClickedCallback = settings.searchClickedCallback;
 
+        decryptUrlIntoSelectedFilters();
         this.html(buildHtml(settings)).hide().fadeIn();
         renderDateRangeIfNeeded();
         bindFilterClicks();
         populateModal();
         exposeFilterModal();
+        // representation of the selected filters in the url
+        // TODO - condition this with user preference
+        embodySelectedFiltersInUrl();
 
         return this;
     };
@@ -211,7 +223,8 @@
             relatedTo = relateToRender(filterParameter);
 
             checkBoxesHtml += '<div class="checkbox" style="display: '+ display + '">' +
-            '<a class="single-filter-js"  data-attribute="'+filterParameter.value+'">'+
+            '<a class="single-filter-js"  data-attribute="'+filterParameter.value+'" ' +
+            realNameAttribute+'="'+filterParameter.name+'">'+
             filterParameter.name+ relatedTo+'</a></div>';
         });
         checkBoxesHtml += '<div class="clearfix"> </div>';
@@ -272,6 +285,8 @@
             parameter,
             filteredOptions;
 
+        // TODO - from url to data modal or from data modal to url
+        // in other words - url params + data modal selected filters should be in both url and filter
         populateSelectedFiltersFromDefaultValues();
 
         $.each(filterModal.selectedFilterParameters, function(serverName, selectedParameter){
@@ -454,7 +469,8 @@
             relatedTo = relateToRender(filterParameter);
 
             checkBoxesHtml += '<div class="checkbox"><label>' +
-            '<input type="checkbox" '+ checked + ' value="' + filterParameter.value + '">' +
+            '<input type="checkbox" '+ checked + ' value="' + filterParameter.value + '" ' +
+            realNameAttribute+'="' + filterParameter.name + '">' +
             filterParameter.name + relatedTo +
             '</label></div>';
         });
@@ -509,7 +525,26 @@
         bindEnterButton();
         bindSearchFilterType();
         bindHiddenPopupsOpened();
+        bindSelectedFiltersToUrl();
+    }
 
+    // using history.js https://github.com/browserstate/history.js
+    // to embody the selected filters in the url
+    // This in order to allow saving filters and sending them to other users
+    function bindSelectedFiltersToUrl(){
+
+        History.Adapter.bind(window,'statechange',function(){ // Note: We are using statechange instead of popstate
+            //var State = History.getState(); // Note: We are using History.getState() instead of event.state
+        });
+
+    }
+
+    // TODO - add jquery , bootstrap, moment
+    function libraryDependenciesValidations(){
+        if (typeof History.Adapter === 'undefined') {
+            throw 'History.js (https://github.com/browserstate/history.js) is a dependency for backoffice filters. ' +
+            'See the docs (http://ohadpartuck.github.io/filter_demo) as to how to install it.'
+        }
     }
 
 
@@ -571,10 +606,7 @@
                     //refresh the filter
                     filterModal.that.renderFilter()
                 }, 200);
-
-
             }
-
         })
     }
 
@@ -623,26 +655,30 @@
     }
 
     function buildElementData(element, type){
-        var name, value;
+        var name, value, realName;
         switch (type){
             case multiCheckBoxes:
                 name = $(element).closest('label').text();
+                realName = $(element).closest('input').attr(realNameAttribute);
                 value = $(element).val();
                 break;
             case single:
                 name = $(element).text();
                 value = $(element).attr('data-attribute');
+                realName = $(element).attr(realNameAttribute);
                 break;
             case rawObject:
                 name = element.name;
                 value = element.value;
+                // TODO - fix here
+                realName = element.name;
                 break;
             default:
                 $(element).text();
                 break;
         }
 
-        return {name: name, value: value};
+        return {name: name, value: value, realName: realName };
     }
 
 
@@ -699,8 +735,6 @@
             });
         });
 
-        console.log(filterModal.selectedFilterParameters);
-
         return $.extend(DoNotSaveThisInTheSelectedFiltered, filterModal.selectedFilterParameters)
     }
 
@@ -730,11 +764,7 @@
 
     function addInputSelectedToDataModal(selectBox){
         var data = genericCollect(selectBox, textType);
-        if (data.value) {
-            filterModal.selectedFilterParameters[data.serverParameterName] = data.value
-        }else{
-            delete filterModal.selectedFilterParameters[data.serverParameterName];
-        }
+        modifySelectedFilterData(data.serverParameterName, data.value);
     }
 
     function bindSingleClick(){
@@ -753,8 +783,7 @@
         $('.remove-filter').on('click', function(){
             var serverFilterName = $(this).parent('.selectbox').attr('data-attribute');
 
-            //remove the filter from selected filters
-            delete filterModal.selectedFilterParameters[serverFilterName];
+            modifySelectedFilterData(serverFilterName, undefined);
 
             //re render the filter
             filterModal.that.renderFilter();
@@ -897,12 +926,172 @@
         return exists;
     }
 
+
+    function modifySelectedFilterData(key, value){
+        var removed = false;
+        if (value) {
+            filterModal.selectedFilterParameters[key] = value;
+        }else{
+            removed = true;
+            delete filterModal.selectedFilterParameters[key];
+        }
+
+        embodySelectedFiltersInUrl(removed)
+
+    }
+
+    function decryptUrlIntoSelectedFilters(){
+        var urlExistingData = getUrlVars(),
+            data = UrlParametersFromUrlData(urlExistingData),
+            values,
+            selectedValue,
+            selectedData,
+            dataToPush;
+
+        //will init only of needed
+        initFilterParametersByKeyValue();
+
+        // TODO make sure that the url data is already included
+        // in the selected filters data
+        $.each(data.relatedData, function(key, value){
+            key = removeFiltersPrefix(key);
+            if (!filterModal.selectedFilterParameters[key]) {
+                values = value.split(',');
+                selectedData = filterModal.filterParametersByKeyValue[key];
+                filterModal.selectedFilterParameters[key] = {values: [], attributeHumaneName: selectedData.name};
+                $.each(values, function (_, humanValue) {
+                    humanValue = decodeURIComponent(humanValue);
+                    selectedValue = selectedData.options[humanValue].value;
+                    dataToPush = buildElementData({name: humanValue, value: selectedValue}, rawObject)
+                    filterModal.selectedFilterParameters[key].values.push(dataToPush)
+                });
+            }
+        })
+
+    }
+
+
+    function removeFiltersPrefix(fullString){
+        return fullString.substr(backofficeFiltersUrlPrefix.length);
+    }
+
+
+    function initFilterParametersByKeyValue(){
+        if (!filterModal.filterParametersByKeyValue){
+            filterModal.filterParametersByKeyValue =  {};
+            $.each(filterModal.settings.filterParameters, function(_, data){
+                filterModal.filterParametersByKeyValue[data.attributeName] = $.extend({}, data);
+                filterModal.filterParametersByKeyValue[data.attributeName].options = {};
+                if (data.options) {
+                    $.each(data.options, function (_, optionData) {
+                        filterModal.filterParametersByKeyValue[data.attributeName].options[optionData.name] = optionData;
+                    })
+                }
+            });
+        }
+    }
+
+
+    // representation of the selected filters in the url
+    // backoffice filters in the url will be prefixed with "bf"
+    function embodySelectedFiltersInUrl(removed){
+
+        var urlExistingData,
+            selectedFiltersData = {},
+            data,
+            url = '',
+            notRelatedUrlData,
+            relatedUrlData;
+
+        /// gather input
+        urlExistingData = getUrlVars();
+        urlExistingData = selectedFiltersFormat(urlExistingData);
+        data = UrlParametersFromUrlData(urlExistingData);
+
+        /// Actual Work
+        // if the user removed a selected filter, we need to run over the
+        // url with the selected filters, else with need to unify url with
+        if (removed){
+            $.extend(selectedFiltersData, filterModal.selectedFilterParameters)
+        }else{
+            $.extend(selectedFiltersData, filterModal.selectedFilterParameters, urlExistingData)
+        }
+
+        relatedUrlData = filterModal.selectedFilterParameters;
+        notRelatedUrlData = data['notRelatedData'];
+
+        url += dataObjectToUrl(notRelatedUrlData);
+        if (url != '') { url += '&'}
+        url += dataObjectToUrl(relatedUrlData, true);
+        url = '?'+ url;
+        History.pushState({}, null, url);
+
+        /// No deliver results, not needed
+    }
+
+    // from key => value to to key => {values: [{name: value}, ...]
+    function selectedFiltersFormat(keyValueData, prePopulatedData){
+        var selectedFiltersFormatData = prePopulatedData || {},
+            selectedValue;
+
+        $.each(keyValueData, function(key, values){
+            if (!$.isArray(values)) {
+                values = [values]
+            }
+
+            selectedFiltersFormatData[key] = {values: []};
+            $.each(values, function(_, value){
+                selectedValue = buildElementData({name: value, value: 'bla', realName: value}, rawObject);
+                selectedFiltersFormatData[key].values.push(selectedValue)
+            });
+
+        });
+
+        return selectedFiltersFormatData;
+    }
+
+    function UrlParametersFromUrlData(urlExistingData){
+        var relatedData = {}, notRelatedData = {};
+
+        $.each(urlExistingData, function(key, value){
+            if (!key.startsWith(backofficeFiltersUrlPrefix)) {
+                notRelatedData[key] = value;
+            }else{
+                relatedData[key] = value;
+            }
+        });
+
+        return {relatedData: relatedData, notRelatedData: notRelatedData};
+    }
+
+
+    function dataObjectToUrl(data, backofficeFiltersPrefix){
+        var url = '',
+            prefix = backofficeFiltersPrefix ? backofficeFiltersUrlPrefix : '';
+
+        $.each(data, function(key, keyData){
+            url +=  prefix + key + '=';
+            $.each(keyData.values, function(_, value){
+                url += value.realName + ','
+            });
+            url = url.slice(0, -1); // cur the last ,
+            url += '&'
+
+        });
+
+        if (!$.isEmptyObject(data) > 0) {
+            url = url.slice(0, -1);  // cur the last '&'
+        }
+
+        return url
+    }
+
     function addSingleSelectedToDataModal(selectedItem ,selectBox){
         var serverParameterName = getAttributeBackendName(selectBox),
             humanParameterName = getAttributeHumanName(selectBox),
             data = buildElementData(selectedItem, single);
 
-        filterModal.selectedFilterParameters[serverParameterName] = {attributeHumaneName: humanParameterName, values: [data]};
+        modifySelectedFilterData(serverParameterName, {attributeHumaneName: humanParameterName, values: [data]})
     }
 
     function addMultiSelectedToDataModal(selectBox, dontAlert){
@@ -919,18 +1108,15 @@
             return {checked: []};
         }
 
-        filterModal.selectedFilterParameters[serverParameterName] = { attributeHumaneName: humanParameterName, values: optionsResult.checked};
+        modifySelectedFilterData(serverParameterName, { attributeHumaneName: humanParameterName, values: optionsResult.checked});
 
         return {checked: optionsResult.checked}
     }
 
     function addDateSelectedToDataModal(selectBox){
         var data = genericCollect(selectBox, dateRange);
-        if (data.value) {
-            filterModal.selectedFilterParameters[data.serverParameterName] = data.value
-        }else{
-            delete filterModal.selectedFilterParameters[data.serverParameterName];
-        }
+
+        modifySelectedFilterData(data.serverParameterName, data.value);
     }
 
     function resetShowSingleFilterIfNeeded(){
@@ -969,10 +1155,10 @@
                     });
 
                     if (0 < selected.length) {
-                        filterModal.selectedFilterParameters[serverParameterName] = {
+                        modifySelectedFilterData(serverParameterName, {
                             attributeHumaneName: humanParameterName,
                             values: selected
-                        };
+                        });
                     }
                 }
             });
@@ -992,6 +1178,33 @@
 
     function existsInArray(item, array){
         return (-1 < $.inArray(item, array))
+    }
+
+    function getUrlVars(){
+        var vars = {}, hash, key, value;
+        // in case no parameters
+        if (window.location.href.indexOf('?') == -1){
+            return vars
+        }
+
+        var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+        for (var i = 0; i < hashes.length; i++) {
+            hash = hashes[i].split('=');
+            key = hash[0];
+            value = hash[1];
+            //vars.push(hash[0]);
+            //%5B%5D is [] in url params
+            if (Global.stringContains(key, '[]') || Global.stringContains(key, '%5B%5D') || vars[key] != undefined) { //array
+                if (!$.isArray(vars[key])) {
+                    vars[key] = [vars[key]];
+                }
+                vars[key].push(value)
+            }else{
+                vars[key] = value
+            }
+
+        }
+        return vars;
     }
 
     $.fn.shiftSelectable = function() {

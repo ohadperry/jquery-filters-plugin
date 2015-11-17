@@ -32,6 +32,7 @@
   "dependencies": {
     "bootstrap": "^3.3.5",
     "daterangepicker": "0.0.3",
+    "history.js": "^1.8.0",
     "jquery": "^2.1.4",
     "moment": "^2.10.6"
   }
