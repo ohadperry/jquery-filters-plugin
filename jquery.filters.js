@@ -1008,8 +1008,11 @@
                 var start = $boxes.index(this);
                 var end = $boxes.index(lastChecked);
 
-                $boxes.slice(Math.min(start,end), Math.max(start,end)+ 1).prop('checked', lastChecked.checked);
-
+                $.each($boxes.slice(Math.min(start,end), Math.max(start,end)+ 1), function(){
+                    if ($(this).is(":visible")) {
+                        $(this).prop('checked', lastChecked.checked);
+                    }
+                })
             }
 
             lastChecked = this;
