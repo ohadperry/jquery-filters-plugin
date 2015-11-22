@@ -1,6 +1,6 @@
 {
   "name": "backoffice-filters",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "Easy Setup - filters rending out of the box for backoffice use.",
   "main": "jquery.filters.js",
   "scripts": {
