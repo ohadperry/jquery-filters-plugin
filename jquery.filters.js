@@ -298,7 +298,7 @@
             // errors on date range
             if (parameter) {
 
-                html += '<div class="selectbox pull-left active" data-attribute="'+ serverName +'" ' +
+                html += '<div class="selectbox pull-left active" data-attribute="'+ serverName +'" ' +  'type-attribute="' + selectedParameter.type +  '"' +
                 'style="padding: 10px; margin-right: 10px; margin-bottom: 10px; ;border: 1px solid '+filterModal.settings.borderColor+'">'  +
                 '<a data-toggle="modal" data-target="#'+showMoreModelName+'">'+ humanParameterName + ': '+  selectedValue +'</a>' +
                 '<button type="button" class="close remove-filter" aria-label="Close" style="padding: 0 10px 0 15px; line-height: 0.75">' +
@@ -447,7 +447,7 @@
 
         selectedFilter = filterModal.selectedFilterParameters[parameter.attributeName];
         if (selectedFilter){
-            selectedValues = $.map(selectedFilter.values, function(data){ return data.value});
+            selectedValues = $.map(selectedFilter.values, function(data){ return data.value.toString()});
         }
 
 
@@ -781,9 +781,10 @@
 
     function bindRemoveSelectedFilter(){
         $('.remove-filter').on('click', function(){
-            var serverFilterName = $(this).parent('.selectbox').attr('data-attribute');
+            var serverFilterName = $(this).parent('.selectbox').attr('data-attribute'),
+                type = getAttributeType($(this).parent('.selectbox'));
 
-            modifySelectedFilterData(serverFilterName, undefined, null);
+            modifySelectedFilterData(serverFilterName, undefined, type);
 
             //re render the filter
             filterModal.that.renderFilter();
@@ -930,6 +931,7 @@
     function modifySelectedFilterData(key, value, type){
         var removed = false;
         if (value) {
+            value['type'] = type;
             filterModal.selectedFilterParameters[key] = value;
         }else{
             removed = true;
@@ -938,7 +940,7 @@
 
         // currently on single and multi are supported,
         // TODO - add date range and text input
-        if ($.inArray(type, [single, multiCheckBoxes]) > -1) {
+        if (existsInArray(type, [single, multiCheckBoxes])) {
             embodySelectedFiltersInUrl(removed)
         }
 
@@ -962,11 +964,13 @@
             if (!filterModal.selectedFilterParameters[key]) {
                 values = value.split(',');
                 selectedData = filterModal.filterParametersByKeyValue[key];
-                filterModal.selectedFilterParameters[key] = {values: [], attributeHumaneName: selectedData.name};
+                filterModal.selectedFilterParameters[key] = {values: [],
+                                    attributeHumaneName: selectedData.name,
+                                    type: selectedData.type};
                 $.each(values, function (_, humanValue) {
                     humanValue = decodeURIComponent(humanValue);
                     selectedValue = selectedData.options[humanValue].value;
-                    dataToPush = buildElementData({name: humanValue, value: selectedValue}, rawObject)
+                    dataToPush = buildElementData({name: humanValue, value: selectedValue}, rawObject);
                     filterModal.selectedFilterParameters[key].values.push(dataToPush)
                 });
             }
@@ -1028,7 +1032,7 @@
         if (url != '') { url += '&'}
         url += dataObjectToUrl(relatedUrlData, true);
         url = '?'+ url;
-        History.pushState({}, null, url);
+        History.pushState({}, document.title, url);
 
         /// No deliver results, not needed
     }
@@ -1133,8 +1137,14 @@
     function getAttributeBackendName(selectBox){
         return $(selectBox).find('.title').attr('data-attribute')
     }
+
+
     function getAttributeHumanName(selectBox){
         return $(selectBox).find('.title').last().text()
+    }
+
+    function getAttributeType(selectBox){
+        return $(selectBox).attr('type-attribute')
     }
 
     function populateModal(){
