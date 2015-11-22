@@ -111,6 +111,8 @@ DWYWWI (Do Whatever You Want With It).
 compliments here - ohadpartuck@gmail.com
 
 # Changes Log
+## V0.1.8
+adding a big feature. Saved filters will be shown on the url. Using the History.js libary. 
 
 ## V0.1.5
 adding feature - enable shift + multi select to checkboxes.
