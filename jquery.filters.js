@@ -764,7 +764,7 @@
 
     function addInputSelectedToDataModal(selectBox){
         var data = genericCollect(selectBox, textType);
-        modifySelectedFilterData(data.serverParameterName, data.value);
+        modifySelectedFilterData(data.serverParameterName, data.value, textType);
     }
 
     function bindSingleClick(){
@@ -783,7 +783,7 @@
         $('.remove-filter').on('click', function(){
             var serverFilterName = $(this).parent('.selectbox').attr('data-attribute');
 
-            modifySelectedFilterData(serverFilterName, undefined);
+            modifySelectedFilterData(serverFilterName, undefined, null);
 
             //re render the filter
             filterModal.that.renderFilter();
@@ -927,7 +927,7 @@
     }
 
 
-    function modifySelectedFilterData(key, value){
+    function modifySelectedFilterData(key, value, type){
         var removed = false;
         if (value) {
             filterModal.selectedFilterParameters[key] = value;
@@ -936,7 +936,11 @@
             delete filterModal.selectedFilterParameters[key];
         }
 
-        embodySelectedFiltersInUrl(removed)
+        // currently on single and multi are supported,
+        // TODO - add date range and text input
+        if ($.inArray(type, [single, multiCheckBoxes]) > -1) {
+            embodySelectedFiltersInUrl(removed)
+        }
 
     }
 
@@ -1091,7 +1095,7 @@
             humanParameterName = getAttributeHumanName(selectBox),
             data = buildElementData(selectedItem, single);
 
-        modifySelectedFilterData(serverParameterName, {attributeHumaneName: humanParameterName, values: [data]})
+        modifySelectedFilterData(serverParameterName, {attributeHumaneName: humanParameterName, values: [data]}, single)
     }
 
     function addMultiSelectedToDataModal(selectBox, dontAlert){
@@ -1108,7 +1112,9 @@
             return {checked: []};
         }
 
-        modifySelectedFilterData(serverParameterName, { attributeHumaneName: humanParameterName, values: optionsResult.checked});
+        modifySelectedFilterData(serverParameterName,
+            { attributeHumaneName: humanParameterName, values: optionsResult.checked},
+            multiCheckBoxes);
 
         return {checked: optionsResult.checked}
     }
@@ -1116,7 +1122,7 @@
     function addDateSelectedToDataModal(selectBox){
         var data = genericCollect(selectBox, dateRange);
 
-        modifySelectedFilterData(data.serverParameterName, data.value);
+        modifySelectedFilterData(data.serverParameterName, data.value, dateRange);
     }
 
     function resetShowSingleFilterIfNeeded(){
@@ -1158,7 +1164,8 @@
                         modifySelectedFilterData(serverParameterName, {
                             attributeHumaneName: humanParameterName,
                             values: selected
-                        });
+                        },
+                        parameter.type);
                     }
                 }
             });
