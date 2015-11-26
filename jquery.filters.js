@@ -1211,7 +1211,7 @@
             value = hash[1];
             //vars.push(hash[0]);
             //%5B%5D is [] in url params
-            if (Global.stringContains(key, '[]') || Global.stringContains(key, '%5B%5D') || vars[key] != undefined) { //array
+            if (stringContains(key, '[]') || stringContains(key, '%5B%5D') || vars[key] != undefined) { //array
                 if (!$.isArray(vars[key])) {
                     vars[key] = [vars[key]];
                 }
@@ -1222,6 +1222,10 @@
 
         }
         return vars;
+    }
+
+    function stringContains(string, subString){
+        return (string.indexOf(subString) > -1);
     }
 
     $.fn.shiftSelectable = function() {
