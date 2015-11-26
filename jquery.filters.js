@@ -969,6 +969,8 @@
                                     type: selectedData.type};
                 $.each(values, function (_, humanValue) {
                     humanValue = decodeURIComponent(humanValue);
+                    // possible bug here
+                    humanValue = humanValue.replace("/", "");
                     selectedValue = selectedData.options[humanValue].value;
                     dataToPush = buildElementData({name: humanValue, value: selectedValue}, rawObject);
                     filterModal.selectedFilterParameters[key].values.push(dataToPush)
