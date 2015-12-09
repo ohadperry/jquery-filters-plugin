@@ -179,7 +179,7 @@
         }
 
         return '<div id="daterange" style="float: left; margin: 5px 0;" class="selectbox active">'  +
-            '<input type="text" data-time-picker="true" value="'+value+'" name="'+dateRangeName+'" style="width: 170px; margin-left: 5px;">' +
+            '<input type="text" data-time-picker="true" value="'+value+'" name="'+dateRangeName+'" class="filters-date-range-picker">' +
             '</div>';
     }
 
@@ -971,9 +971,11 @@
                     humanValue = decodeURIComponent(humanValue);
                     // possible bug here
                     humanValue = humanValue.replace("/", "");
-                    selectedValue = selectedData.options[humanValue].value;
-                    dataToPush = buildElementData({name: humanValue, value: selectedValue}, rawObject);
-                    filterModal.selectedFilterParameters[key].values.push(dataToPush)
+                    if (selectedData.options[humanValue]) {
+                        selectedValue = selectedData.options[humanValue].value;
+                        dataToPush = buildElementData({name: humanValue, value: selectedValue}, rawObject);
+                        filterModal.selectedFilterParameters[key].values.push(dataToPush)
+                    }
                 });
             }
         })

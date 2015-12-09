@@ -9,3 +9,10 @@
 .gray{
     color: lightgray;
 }
+
+
+.filters-date-range-picker{
+    width: 170px;
+    margin-left: 5px;
+
+}
