@@ -256,6 +256,8 @@
                         'Last 5 minutes': [moment().subtract(5, 'minutes'), moment().endOf('day')],
                         'Last 15 minutes': [moment().subtract(15, 'minutes'), moment().endOf('day')],
                         'Last 1 hour': [moment().subtract(1, 'hour'), moment().endOf('day')],
+                        'Last 3 hour': [moment().subtract(3, 'hour'), moment().endOf('day')],
+                        'Last 1 day': [moment().subtract(1, 'day'), moment().endOf('day')],
                         'Last 7 Days': [moment().subtract(6, 'days'), moment().endOf('day')],
                         'Last 30 Days': [moment().subtract(29, 'days'), moment().endOf('day')],
                         'Yesterday': [moment().subtract(1, 'days').startOf('day'), moment().subtract(1, 'days').endOf('day')],
