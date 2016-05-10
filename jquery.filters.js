@@ -251,13 +251,18 @@
             dateRangeElement.daterangepicker({
                 format: filterModal.settings.dateFormat,
                 ranges: {
-                    'Today': [moment(), moment().add(1, 'days')],
-                    'Yesterday': [moment().subtract(1, 'days'), moment()],
-                    'Last 7 Days': [moment().subtract(6, 'days'), moment().add(1, 'days')],
-                    'Last 30 Days': [moment().subtract(29, 'days'), moment().add(1, 'days')],
-                    'This Month': [moment().startOf('month'), moment().endOf('month')],
-                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
-                    'Last 3 Months': [moment().subtract(3, 'month').startOf('month'), moment().add(1, 'days')],
+                    ranges: {
+                        'Today': [moment().startOf('day'), moment().endOf('day')],
+                        'Last 5 minutes': [moment().subtract(5, 'minutes'), moment().endOf('day')],
+                        'Last 15 minutes': [moment().subtract(15, 'minutes'), moment().endOf('day')],
+                        'Last 1 hour': [moment().subtract(1, 'hour'), moment().endOf('day')],
+                        'Last 7 Days': [moment().subtract(6, 'days'), moment().endOf('day')],
+                        'Last 30 Days': [moment().subtract(29, 'days'), moment().endOf('day')],
+                        'Yesterday': [moment().subtract(1, 'days').startOf('day'), moment().subtract(1, 'days').endOf('day')],
+                        'This Month': [moment().startOf('month'), moment().endOf('month')],
+                        'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                        'Last 3 Months': [moment().subtract(3, 'month').startOf('month'), moment().add(10, 'minutes')],
+                    }, locale: {cancelLabel: 'Clear'}
                 }, locale: {cancelLabel: 'Clear'}
 
             }, cb);
