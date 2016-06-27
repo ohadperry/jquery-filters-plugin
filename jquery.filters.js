@@ -46,6 +46,7 @@
             showBorders: true,
             globalPadding: '33px',
             showShiftSelectMessage: true,
+            searchButtonText: 'Search',
         }, options);
 
         filterModal.that = this;
@@ -100,7 +101,7 @@
         if (filterModal.settings.showSearchButton) {
             searchButton = '<div class="clearfix"></div>' +
             '<div class="row" style="float: right; margin-top: 20px;">' +
-            '<button id="filter-search-button" style="padding: 10px 112px" class="btn btn-lg btn-block btn-success">Search</button>' +
+            '<button id="filter-search-button" style="padding: 10px 112px" class="btn btn-lg btn-block btn-success">'+filterModal.settings.searchButtonText+'</button>' +
             '</div> ';
         }
 
