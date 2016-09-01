@@ -969,7 +969,7 @@
             selectedValue,
             selectedData,
             dataToPush,
-            name, tempValue;
+            name, tempValue, tempRelatedTo;
 
         //will init only of needed
         initFilterParametersByKeyValue();
@@ -991,11 +991,12 @@
                     if (selectedData.options[selectedFilterValue]) {
 
                         selectedValue = selectedData.options[selectedFilterValue][filterModal.decryptField];
+                        tempRelatedTo = relateToRender(selectedData.options[selectedFilterValue]);
                         if (filterModal.decryptField == 'value'){
-                            name = selectedFilterValue;
+                            name = selectedFilterValue + tempRelatedTo;
                             tempValue = selectedValue;
                         }else{
-                            name = selectedValue;
+                            name = selectedValue + tempRelatedTo;
                             tempValue = selectedFilterValue;
                         }
 
