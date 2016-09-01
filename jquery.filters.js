@@ -894,6 +894,10 @@
         var result = [],
             relevantSelectedFilter;
 
+        if (options == undefined){
+            return result;
+        }
+
         $.each(options, function(_, option){
             if (option.relatedTo){
                 $.each(option.relatedTo, function(relatedToName, relatedToValue){
@@ -1237,6 +1241,10 @@
         }
 
         var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+        if (hashes[0]== ''){
+            return vars
+        }
+
         for (var i = 0; i < hashes.length; i++) {
             hash = hashes[i].split('=');
             key = hash[0];
