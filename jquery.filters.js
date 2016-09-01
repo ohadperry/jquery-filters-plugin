@@ -47,11 +47,14 @@
             globalPadding: '33px',
             showShiftSelectMessage: true,
             searchButtonText: 'Search',
+            timeOffsetInHours: 0,
+            encodeInUrl: 'value',  //can be 'value' / 'name'
         }, options);
 
         filterModal.that = this;
         filterModal.settings = settings;
         filterModal.searchClickedCallback = settings.searchClickedCallback;
+        filterModal.decryptField = settings.encodeInUrl == 'value' ? 'name': 'value';
 
         decryptUrlIntoSelectedFilters();
         this.html(buildHtml(settings)).hide().fadeIn();
@@ -100,9 +103,9 @@
 
         if (filterModal.settings.showSearchButton) {
             searchButton = '<div class="clearfix"></div>' +
-            '<div class="row" style="float: right; margin-top: 20px;">' +
-            '<button id="filter-search-button" style="padding: 10px 112px" class="btn btn-lg btn-block btn-success">'+filterModal.settings.searchButtonText+'</button>' +
-            '</div> ';
+                '<div class="row" style="float: right; margin-top: 20px;">' +
+                '<button id="filter-search-button" style="padding: 10px 112px" class="btn btn-lg btn-block btn-success">'+filterModal.settings.searchButtonText+'</button>' +
+                '</div> ';
         }
 
         title = '<legend>'+ settings.title+'</legend>';
@@ -222,11 +225,12 @@
 
             //in case this filter is connected to other filters
             relatedTo = relateToRender(filterParameter);
+            // todo render relatedTo in the html to be coded in the url later
 
             checkBoxesHtml += '<div class="checkbox" style="display: '+ display + '">' +
-            '<a class="single-filter-js"  data-attribute="'+filterParameter.value+'" ' +
-            realNameAttribute+'="'+filterParameter.name+'">'+
-            filterParameter.name+ relatedTo+'</a></div>';
+                '<a class="single-filter-js"  data-attribute="'+filterParameter.value+'" ' +
+                realNameAttribute+'="'+filterParameter.name+'">'+
+                filterParameter.name+ relatedTo+'</a></div>';
         });
         checkBoxesHtml += '<div class="clearfix"> </div>';
 
@@ -241,7 +245,8 @@
     }
 
     function renderDateRangeIfNeeded(){
-        var dateRangeElement = $('input[name="'+dateRangeName+'"]');
+        var dateRangeElement = $('input[name="'+dateRangeName+'"]'),
+            s = filterModal.settings;
         if (dateRangeElement.length >0 ) {
             function cb(start, end) {
                 $('input[name="' + dateRangeName + '"]').html(start.format(filterModal.settings.dateFormat) + ' - ' + end.format(filterModal.settings.dateFormat));
@@ -252,21 +257,20 @@
             dateRangeElement.daterangepicker({
                 format: filterModal.settings.dateFormat,
                 ranges: {
-                    ranges: {
-                        'Today': [moment().startOf('day'), moment().endOf('day')],
-                        'Last 5 minutes': [moment().subtract(5, 'minutes'), moment().endOf('day')],
-                        'Last 15 minutes': [moment().subtract(15, 'minutes'), moment().endOf('day')],
-                        'Last 1 hour': [moment().subtract(1, 'hour'), moment().endOf('day')],
-                        'Last 3 hour': [moment().subtract(3, 'hour'), moment().endOf('day')],
-                        'Last 1 day': [moment().subtract(1, 'day'), moment().endOf('day')],
-                        'Last 7 Days': [moment().subtract(6, 'days'), moment().endOf('day')],
-                        'Last 30 Days': [moment().subtract(29, 'days'), moment().endOf('day')],
-                        'Yesterday': [moment().subtract(1, 'days').startOf('day'), moment().subtract(1, 'days').endOf('day')],
-                        'This Month': [moment().startOf('month'), moment().endOf('month')],
-                        'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
-                        'Last 3 Months': [moment().subtract(3, 'month').startOf('month'), moment().add(10, 'minutes')],
-                    }, locale: {cancelLabel: 'Clear'}
+                    'Today': [moment().startOf('day'), moment().endOf('day')],
+                    'Last 5 minutes': [moment().subtract(s.timeOffsetInHours, 'hour').subtract(5, 'minutes'), moment().endOf('day')],
+                    'Last 15 minutes': [moment().subtract(s.timeOffsetInHours, 'hour').subtract(15, 'minutes'), moment().endOf('day')],
+                    'Last 1 hour': [moment().subtract(s.timeOffsetInHours, 'hour').subtract(1, 'hour'), moment().endOf('day')],
+                    'Last 3 hour': [moment().subtract(s.timeOffsetInHours, 'hour').subtract(3, 'hour'), moment().endOf('day')],
+                    'Last 1 day': [moment().subtract(1, 'day'), moment().endOf('day')],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment().endOf('day')],
+                    'Last 30 Days': [moment().subtract(29, 'days'), moment().endOf('day')],
+                    'Yesterday': [moment().subtract(1, 'days').startOf('day'), moment().subtract(1, 'days').endOf('day')],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                    'Last 3 Months': [moment().subtract(3, 'month').startOf('month'), moment().add(10, 'minutes')],
                 }, locale: {cancelLabel: 'Clear'}
+
 
             }, cb);
         }
@@ -300,18 +304,18 @@
         $.each(filterModal.selectedFilterParameters, function(serverName, selectedParameter){
             humanParameterName = selectedParameter.attributeHumaneName;
             showMoreModelName = calcShowMoreModelName(selectedParameter.attributeHumaneName);
-            selectedValue = (1 < selectedParameter.values.length) ? '(' + selectedParameter.values.length + ')' : selectedParameter.values[0].name;
+            selectedValue = (1 < selectedParameter.values.length) ? '(' + selectedParameter.values.length + ')' : selectedParameter.values[0]['name'];
 
             parameter = filterModal.filters[serverName];
             // errors on date range
             if (parameter) {
 
                 html += '<div class="selectbox pull-left active" data-attribute="'+ serverName +'" ' +  'type-attribute="' + selectedParameter.type +  '"' +
-                'style="padding: 10px; margin-right: 10px; margin-bottom: 10px; ;border: 1px solid '+filterModal.settings.borderColor+'">'  +
-                '<a data-toggle="modal" data-target="#'+showMoreModelName+'">'+ humanParameterName + ': '+  selectedValue +'</a>' +
-                '<button type="button" class="close remove-filter" aria-label="Close" style="padding: 0 10px 0 15px; line-height: 0.75">' +
-                '<span aria-hidden="true">&times;</span></button>' +
-                '</div>';
+                    'style="padding: 10px; margin-right: 10px; margin-bottom: 10px; ;border: 1px solid '+filterModal.settings.borderColor+'">'  +
+                    '<a data-toggle="modal" data-target="#'+showMoreModelName+'">'+ humanParameterName + ': '+  selectedValue +'</a>' +
+                    '<button type="button" class="close remove-filter" aria-label="Close" style="padding: 0 10px 0 15px; line-height: 0.75">' +
+                    '<span aria-hidden="true">&times;</span></button>' +
+                    '</div>';
 
                 filteredOptions = filterOptionsByDateAndRelatedToFilters(parameter);
                 html += showMoreHiddenPopUpHtml(parameter.name, showMoreModelName, parameter, filteredOptions);
@@ -363,10 +367,10 @@
                     filteredOptions = filterOptionsByDateAndRelatedToFilters(parameter);
                     tempHtml = showMoreHiddenPopUpHtml(parameter.name, showMoreModelName, parameter, filteredOptions);
                     additionalFilterHtml += '<div class="checkbox"><a data-toggle="modal" data-target="#'+
-                    showMoreModelName+'" data-attribute="'+
-                    parameter.attributeName+'">'+parameter.name+'</a>' +
-                    '</div>' +
-                    tempHtml;
+                        showMoreModelName+'" data-attribute="'+
+                        parameter.attributeName+'">'+parameter.name+'</a>' +
+                        '</div>' +
+                        tempHtml;
                 }
             }
         });
@@ -375,11 +379,11 @@
         }
 
         filterInternalHtml +='<div class="select-parameter-box  " style="border: 1px solid '+filterModal.settings.borderColor+'; height: '+filterModal.settings.selectBoxHeight *2+'px; padding: 20px; width: 25%; float: left;">' +
-        'Additional Filters' +
-        '<div class="group-surround">' +
-        additionalFilterHtml +
-        '</div>' +
-        '</div>' ;
+            'Additional Filters' +
+            '<div class="group-surround">' +
+            additionalFilterHtml +
+            '</div>' +
+            '</div>' ;
 
         filterInternalHtml += '</div>';
 
@@ -477,10 +481,10 @@
             relatedTo = relateToRender(filterParameter);
 
             checkBoxesHtml += '<div class="checkbox"><label>' +
-            '<input type="checkbox" '+ checked + ' value="' + filterParameter.value + '" ' +
-            realNameAttribute+'="' + filterParameter.name + '">' +
-            filterParameter.name + relatedTo +
-            '</label></div>';
+                '<input type="checkbox" '+ checked + ' value="' + filterParameter.value + '" ' +
+                realNameAttribute+'="' + filterParameter.name + '">' +
+                filterParameter.name + relatedTo +
+                '</label></div>';
         });
 
         return filterInputBox + shiftSelectMultiMessage + checkBoxesHtml;
@@ -562,7 +566,7 @@
             // enable the user to type directly in the search input
             // without having to select it using the mouse
             $('#'+modal.id).on('shown.bs.modal', function (e) {
-                 $(this).find('.search-filters-js').focus()
+                $(this).find('.search-filters-js').focus()
             });
 
             //enable shift + select multi checkboxes
@@ -592,9 +596,9 @@
     }
 
     function bindInputChange(){
-         $('.text-input-js').keyup(function(){
-             addInputSelectedToDataModal($(this).closest('.select-parameter-box'))
-         })
+        $('.text-input-js').keyup(function(){
+            addInputSelectedToDataModal($(this).closest('.select-parameter-box'))
+        })
     }
 
     function bindMultiPopup(){
@@ -960,7 +964,8 @@
             values,
             selectedValue,
             selectedData,
-            dataToPush;
+            dataToPush,
+            name, tempValue;
 
         //will init only of needed
         initFilterParametersByKeyValue();
@@ -973,15 +978,24 @@
                 values = value.split(',');
                 selectedData = filterModal.filterParametersByKeyValue[key];
                 filterModal.selectedFilterParameters[key] = {values: [],
-                                    attributeHumaneName: selectedData.name,
-                                    type: selectedData.type};
-                $.each(values, function (_, humanValue) {
-                    humanValue = decodeURIComponent(humanValue);
+                    attributeHumaneName: selectedData.name,
+                    type: selectedData.type};
+                $.each(values, function (_, selectedFilterValue) {
+                    selectedFilterValue = decodeURIComponent(selectedFilterValue);
                     // possible bug here
-                    humanValue = humanValue.replace("/", "");
-                    if (selectedData.options[humanValue]) {
-                        selectedValue = selectedData.options[humanValue].value;
-                        dataToPush = buildElementData({name: humanValue, value: selectedValue}, rawObject);
+                    selectedFilterValue = selectedFilterValue.replace("/", "");
+                    if (selectedData.options[selectedFilterValue]) {
+
+                        selectedValue = selectedData.options[selectedFilterValue][filterModal.decryptField];
+                        if (filterModal.decryptField == 'value'){
+                            name = selectedFilterValue;
+                            tempValue = selectedValue;
+                        }else{
+                            name = selectedValue;
+                            tempValue = selectedFilterValue;
+                        }
+
+                        dataToPush = buildElementData({name: name, value: tempValue}, rawObject);
                         filterModal.selectedFilterParameters[key].values.push(dataToPush)
                     }
                 });
@@ -997,6 +1011,7 @@
 
 
     function initFilterParametersByKeyValue(){
+        var key;
         if (!filterModal.filterParametersByKeyValue){
             filterModal.filterParametersByKeyValue =  {};
             $.each(filterModal.settings.filterParameters, function(_, data){
@@ -1004,7 +1019,11 @@
                 filterModal.filterParametersByKeyValue[data.attributeName].options = {};
                 if (data.options) {
                     $.each(data.options, function (_, optionData) {
-                        filterModal.filterParametersByKeyValue[data.attributeName].options[optionData.name] = optionData;
+                        // todo maybe change optionData.name to optionData.value ,
+                        // name can repeat , value - less likely
+
+                        key = optionData[filterModal.settings.encodeInUrl];
+                        filterModal.filterParametersByKeyValue[data.attributeName].options[key] = optionData;
                     })
                 }
             });
@@ -1092,7 +1111,8 @@
         $.each(data, function(key, keyData){
             url +=  prefix + key + '=';
             $.each(keyData.values, function(_, value){
-                url += value.realName + ','
+                // filterModal.settings.encodeInUrl or 'realValue'
+                url += value[filterModal.settings.encodeInUrl] + ','
             });
             url = url.slice(0, -1); // cur the last ,
             url += '&'
@@ -1184,10 +1204,10 @@
 
                     if (0 < selected.length) {
                         modifySelectedFilterData(serverParameterName, {
-                            attributeHumaneName: humanParameterName,
-                            values: selected
-                        },
-                        parameter.type);
+                                attributeHumaneName: humanParameterName,
+                                values: selected
+                            },
+                            parameter.type);
                     }
                 }
             });
