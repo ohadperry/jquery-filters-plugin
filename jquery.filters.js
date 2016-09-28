@@ -553,12 +553,13 @@
         bindSelectedFiltersToUrl();
     }
 
+
     // using history.js https://github.com/browserstate/history.js
     // to embody the selected filters in the url
     // This in order to allow saving filters and sending them to other users
-    function bindSelectedFiltersToUrl(){
+    function bindSelectedFiltersToUrl() {
 
-        History.Adapter.bind(window,'statechange',function(){ // Note: We are using statechange instead of popstate
+        History.Adapter.bind(window, 'statechange', function () { // Note: We are using statechange instead of popstate
             //var State = History.getState(); // Note: We are using History.getState() instead of event.state
         });
 
@@ -790,6 +791,7 @@
     function addInputSelectedToDataModal(selectBox){
         var data = genericCollect(selectBox, textType);
         modifySelectedFilterData(data.serverParameterName, data.value, textType);
+        embodySelectedFiltersInUrl()
     }
 
     function bindSingleClick(){
