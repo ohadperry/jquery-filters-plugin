@@ -31,6 +31,7 @@
     };
 
     $.fn.bootstrapFilter = function(options) {
+        var filterHtml;
 
         // first thing, make sure we have all of our dependencies
         libraryDependenciesValidations();
@@ -57,7 +58,8 @@
         filterModal.decryptField = settings.encodeInUrl == 'value' ? 'name': 'value';
 
         decryptUrlIntoSelectedFilters();
-        this.html(buildHtml(settings)).hide().fadeIn();
+        filterHtml = buildHtml(settings);
+        this.html(filterHtml).hide().fadeIn();
         renderDateRangeIfNeeded();
         bindFilterClicks();
         populateModal();
@@ -171,7 +173,7 @@
         if (filterModal.selectedFilterParameters[parameter.attributeName]){
             value = filterModal.selectedFilterParameters[parameter.attributeName].values[0].value
         }
-
+        // todo support prefilled text input
         return '<input style="margin: 5px 0" class="form-control text-input-js" value="'+value+'" placeholder="'+ (parameter.placeholder || name) + '">';
     }
 
@@ -182,6 +184,7 @@
             value = filterModal.selectedFilterParameters[parameter.attributeName].values[0].value
         }
 
+        // todo support prefilled date Range input
         return '<div id="daterange" style="float: left; margin: 5px 0;" class="selectbox active">'  +
             '<input type="text" data-time-picker="true" value="'+value+'" name="'+dateRangeName+'" class="filters-date-range-picker">' +
             '</div>';
@@ -302,6 +305,11 @@
         populateSelectedFiltersFromDefaultValues();
 
         $.each(filterModal.selectedFilterParameters, function(serverName, selectedParameter){
+            // skip on not supported input selected filters
+            if (!existsInArray(selectedParameter.type, [single, multiCheckBoxes])){
+                return true;
+            }
+
             humanParameterName = selectedParameter.attributeHumaneName;
             showMoreModelName = calcShowMoreModelName(selectedParameter.attributeHumaneName);
             selectedValue = (1 < selectedParameter.values.length) ? '(' + selectedParameter.values.length + ')' : selectedParameter.values[0]['name'];
@@ -490,8 +498,13 @@
         return filterInputBox + shiftSelectMultiMessage + checkBoxesHtml;
     }
 
-    function relateToRender(filterParameter){
+    function relateToRender(filterParameter, dataType){
         var relatedTo = '';
+        // if not relevant here
+        if (existsInArray(dataType, [textType])) {
+            return ''
+        }
+
         if (filterParameter.relatedTo){
             relatedTo += ' (';
             $.each(filterParameter.relatedTo, function(paramServerName, parameterData){
@@ -979,19 +992,22 @@
         $.each(data.relatedData, function(key, value){
             key = removeFiltersPrefix(key);
             if (!filterModal.selectedFilterParameters[key]) {
-                values = value.split(',');
                 selectedData = filterModal.filterParametersByKeyValue[key];
-                filterModal.selectedFilterParameters[key] = {values: [],
+                values = getSelectedValues(value, selectedData.type);
+                filterModal.selectedFilterParameters[key] = {
+                    values: [],
                     attributeHumaneName: selectedData.name,
-                    type: selectedData.type};
+                    type: selectedData.type
+                };
                 $.each(values, function (_, selectedFilterValue) {
                     selectedFilterValue = decodeURIComponent(selectedFilterValue);
                     // possible bug here
-                    selectedFilterValue = selectedFilterValue.replace("/", "");
-                    if (selectedData.options[selectedFilterValue]) {
+                    selectedFilterValue = selectedFilterValue.replace('/', '');
+                    // todo - support isValidInput for text input
+                    if (isValidInput(selectedData.options, selectedFilterValue, selectedData.type)) {
 
-                        selectedValue = selectedData.options[selectedFilterValue][filterModal.decryptField];
-                        tempRelatedTo = relateToRender(selectedData.options[selectedFilterValue]);
+                        selectedValue = getSelectedValueByType(filterModal.decryptField, selectedData.options, selectedFilterValue, selectedData.type);
+                        tempRelatedTo = relateToRender(selectedData.options[selectedFilterValue], selectedData.type);
                         if (filterModal.decryptField == 'value'){
                             name = selectedFilterValue + tempRelatedTo;
                             tempValue = selectedValue;
@@ -1007,6 +1023,34 @@
             }
         })
 
+    }
+
+    function getSelectedValues(value, dataType){
+        if (existsInArray(dataType, [textType])){
+            // for input, no need to seaprate.
+            // for example for id_number "123,52314" is one value not two
+            return [value]
+        }else{
+            return value.split(',');
+        }
+    }
+
+
+    function getSelectedValueByType(decryptField, options, selectedFilterValue, dataType){
+        if (existsInArray(dataType, [textType])){
+            return selectedFilterValue
+        }else{
+            return options[selectedFilterValue][decryptField]
+        }
+    }
+
+
+    function isValidInput(options, value, dataType){
+        if (existsInArray(dataType, [textType])){
+            return true
+        }else{
+            return options[value]
+        }
     }
 
 
