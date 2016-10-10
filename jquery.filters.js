@@ -1125,6 +1125,11 @@
             selectedValue;
 
         $.each(keyValueData, function(key, values){
+            if (!key.startsWith(backofficeFiltersUrlPrefix)) {
+                //unrelated key
+                return true
+            }
+
             if (!$.isArray(values)) {
                 values = [values]
             }
