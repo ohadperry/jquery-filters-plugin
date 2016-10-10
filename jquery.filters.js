@@ -1125,18 +1125,13 @@
             selectedValue;
 
         $.each(keyValueData, function(key, values){
-            if (!key.startsWith(backofficeFiltersUrlPrefix)) {
-                //unrelated key
-                return true
-            }
-
             if (!$.isArray(values)) {
                 values = [values]
             }
 
             selectedFiltersFormatData[key] = {values: []};
             $.each(values, function(_, value){
-                selectedValue = buildElementData({name: value, value: 'bla', realName: value}, rawObject);
+                selectedValue = buildElementData({name: value, value: value, realName: value}, rawObject);
                 selectedFiltersFormatData[key].values.push(selectedValue)
             });
 
