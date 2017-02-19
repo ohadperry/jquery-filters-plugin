@@ -50,6 +50,10 @@
             searchButtonText: 'Search',
             timeOffsetInHours: 0,
             encodeInUrl: 'value',  //can be 'value' / 'name'
+            // more then this, we'll have to have a separate popup to hold all the filters
+            MAX_FILTERS: 15,
+            OTHERS_MODEL_NAME: 'others-id',
+            OTHERS_TEXT_LINK: 'Other Filters',
         }, options);
 
         filterModal.that = this;
@@ -339,7 +343,9 @@
             realIndex = 0,
             tempHtml,
             showMoreModelName,
-            filteredOptions;
+            filteredOptions,
+            maxFilters = filterModal.settings.MAX_FILTERS,
+            reachedMax = false;
 
         // first 6 filters
         $.each(filterModal.settings.filterParameters, function(index, parameter){
@@ -367,18 +373,19 @@
             if (!shouldNotRenderParameter(parameter)){
                 realIndex += 1
             }
-            if (realIndex > 6 ){
-                if (shouldNotRenderParameter(parameter)){
-                    additionalFilterHtml += '';
-                }else{
-                    showMoreModelName = calcShowMoreModelName(parameter.name);
-                    filteredOptions = filterOptionsByDateAndRelatedToFilters(parameter);
-                    tempHtml = showMoreHiddenPopUpHtml(parameter.name, showMoreModelName, parameter, filteredOptions);
-                    additionalFilterHtml += '<div class="checkbox"><a data-toggle="modal" data-target="#'+
-                        showMoreModelName+'" data-attribute="'+
-                        parameter.attributeName+'">'+parameter.name+'</a>' +
+            if (realIndex > 6 && !reachedMax){
+                if (realIndex > maxFilters){
+                    // render 'others' link to open others filters (just once)
+                    showMoreModelName = filterModal.settings.OTHERS_MODEL_NAME;
+                    tempHtml = OthersHiddenPopUpHtml(filterModal.settings.filterParameters);
+                    additionalFilterHtml += '<div class="checkbox"><a data-toggle="modal" data-target="#' +
+                        showMoreModelName + '" data-attribute="' +
+                        'other-filters' + '"> '+filterModal.settings.OTHERS_TEXT_LINK+' </a>' +
                         '</div>' +
                         tempHtml;
+                    reachedMax = true;
+                }else {
+                    additionalFilterHtml += singleFilterLinkHtml(parameter)
                 }
             }
         });
@@ -396,6 +403,26 @@
         filterInternalHtml += '</div>';
 
         return filterInternalHtml;
+    }
+
+
+    function singleFilterLinkHtml(parameter){
+        var showMoreModelName, filteredOptions, tempHtml, html;
+        if (shouldNotRenderParameter(parameter)) {
+            html = '';
+        } else {
+            showMoreModelName = calcShowMoreModelName(parameter.name);
+            filteredOptions = filterOptionsByDateAndRelatedToFilters(parameter);
+            tempHtml = showMoreHiddenPopUpHtml(parameter.name, showMoreModelName, parameter, filteredOptions);
+            html = '<div class="checkbox"><a class="bootstrap-single-link-modal-js" data-toggle="modal" data-target="#' +
+                showMoreModelName + '" data-attribute="' +
+                parameter.attributeName + '">' + parameter.name + '</a>' +
+                '</div>' +
+                tempHtml;
+        }
+
+        return html
+
     }
 
     function buildSingleParameterHtml(index, parameter){
@@ -454,6 +481,40 @@
             '</div><!-- /.modal-dialog -->' +
             '</div><!-- /.modal -->';
 
+    }
+
+    // this hidden pop up will contain others filters.
+    // if the number of filters is bigger than 16, it won't hold in the main html.
+    function OthersHiddenPopUpHtml(allParametersToRender){
+        return '<div id="'+filterModal.settings.OTHERS_MODEL_NAME+'" class="modal fade in bootstrap-modal-js">'+
+            '<div class="modal-dialog">' +
+            '<div class="modal-content">' +
+            '<div class="modal-header">' +
+            '<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>' +
+            '<div data-attribute="'+ 'ohad'+'" class="title" style="visibility: hidden;">'+ 'ohad -name' +' </div>' +
+            '<h4 class="modal-title">'+ filterModal.settings.OTHERS_TEXT_LINK+'</h4>' +
+            '</div>' +
+            '<div class="modal-body">' +
+            otherFiltersHtml(allParametersToRender) +
+            '</div>' +
+            '<div class="modal-footer">' +
+            '<button type="button" class="btn btn-default multi-popup-close-js" data-dismiss="modal">Close</button>' +
+            '</div>' +
+            '</div><!-- /.modal-content -->'+
+            '</div><!-- /.modal-dialog -->' +
+            '</div><!-- /.modal -->';
+
+    }
+
+    function otherFiltersHtml(allParametersToRender){
+        var html = '';
+        $.each(allParametersToRender, function (index, filterParameter) {
+            if (index >= filterModal.settings.MAX_FILTERS) {
+                html += singleFilterLinkHtml(filterParameter)
+            }
+        });
+
+        return html;
     }
 
     function htmlForParameterOptions(parameter, filteredOptions) {
@@ -551,6 +612,7 @@
         bindSearchFilterType();
         bindHiddenPopupsOpened();
         bindSelectedFiltersToUrl();
+        bindSingleLinkFilterClicked();
     }
 
 
@@ -903,6 +965,18 @@
                 }
             }
         });
+    }
+
+    // in case we click on additional filters, we want to hide the others
+    // pop up to make sure They don't conflict
+    function bindSingleLinkFilterClicked(){
+        $('.bootstrap-single-link-modal-js').on('click', function(){
+            linkText = $(this).text();
+            if (linkText != filterModal.settings.OTHERS_TEXT_LINK){
+                $('#'+ filterModal.settings.OTHERS_MODEL_NAME).hide();
+            }
+        });
+
     }
 
     function filterOutSelectedRelatedTo(options){
