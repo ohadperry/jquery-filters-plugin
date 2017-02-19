@@ -343,7 +343,6 @@
             realIndex = 0,
             tempHtml,
             showMoreModelName,
-            filteredOptions,
             maxFilters = filterModal.settings.MAX_FILTERS,
             reachedMax = false;
 
@@ -385,7 +384,7 @@
                         tempHtml;
                     reachedMax = true;
                 }else {
-                    additionalFilterHtml += singleFilterLinkHtml(parameter)
+                    additionalFilterHtml += singleFilterLinkHtml(parameter, 'both')
                 }
             }
         });
@@ -406,19 +405,31 @@
     }
 
 
-    function singleFilterLinkHtml(parameter){
-        var showMoreModelName, filteredOptions, tempHtml, html;
+    function singleFilterLinkHtml(parameter, renderType){
+        var showMoreModelName,
+            filteredOptions,
+            hiddenPopUpHtml,
+            html,
+            link;
+
         if (shouldNotRenderParameter(parameter)) {
             html = '';
         } else {
             showMoreModelName = calcShowMoreModelName(parameter.name);
             filteredOptions = filterOptionsByDateAndRelatedToFilters(parameter);
-            tempHtml = showMoreHiddenPopUpHtml(parameter.name, showMoreModelName, parameter, filteredOptions);
-            html = '<div class="checkbox"><a class="bootstrap-single-link-modal-js" data-toggle="modal" data-target="#' +
+            hiddenPopUpHtml = showMoreHiddenPopUpHtml(parameter.name, showMoreModelName, parameter, filteredOptions);
+            link = '<div class="checkbox"><a class="bootstrap-single-link-modal-js" data-toggle="modal" data-target="#' +
                 showMoreModelName + '" data-attribute="' +
                 parameter.attributeName + '">' + parameter.name + '</a>' +
-                '</div>' +
-                tempHtml;
+                '</div>';
+            if (renderType == 'hidden-popups-only'){
+                html = hiddenPopUpHtml
+            } else if (renderType == 'links-only'){
+                html = link
+            }else {
+                html = link + hiddenPopUpHtml;
+            }
+
         }
 
         return html
@@ -486,7 +497,8 @@
     // this hidden pop up will contain others filters.
     // if the number of filters is bigger than 16, it won't hold in the main html.
     function OthersHiddenPopUpHtml(allParametersToRender){
-        return '<div id="'+filterModal.settings.OTHERS_MODEL_NAME+'" class="modal fade in bootstrap-modal-js">'+
+        var renderType = 'hidden-popups-only';
+        var html =  '<div id="'+filterModal.settings.OTHERS_MODEL_NAME+'" class="modal fade in bootstrap-modal-js">'+
             '<div class="modal-dialog">' +
             '<div class="modal-content">' +
             '<div class="modal-header">' +
@@ -504,13 +516,23 @@
             '</div><!-- /.modal-dialog -->' +
             '</div><!-- /.modal -->';
 
+        //render hidden pop ups html outside so that when hiding the others pop up it wont hide the selected pop up
+        $.each(allParametersToRender, function (index, filterParameter) {
+            if (index > filterModal.settings.MAX_FILTERS) {
+                html += singleFilterLinkHtml(filterParameter, renderType)
+            }
+        });
+
+        return html
+
+
     }
 
     function otherFiltersHtml(allParametersToRender){
-        var html = '';
+        var html = '', renderType = 'links-only';
         $.each(allParametersToRender, function (index, filterParameter) {
-            if (index >= filterModal.settings.MAX_FILTERS) {
-                html += singleFilterLinkHtml(filterParameter)
+            if (index > filterModal.settings.MAX_FILTERS) {
+                html += singleFilterLinkHtml(filterParameter, renderType)
             }
         });
 
