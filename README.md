@@ -28,7 +28,7 @@ No Download Needed. jQuery filters rending out of the box for backoffice use.
 <body>
   <div id="wrapper">
       <div id="filter"></div>
-  </div> 
+  </div>
 
  </body>
   <script type="text/javascript">
@@ -95,28 +95,28 @@ Filter 2 Option2 -> Filter 1 Option2
 # Dependencies
 
 * Jquery
-* Bootstrap 3 
-* daterangepicker js 
+* Bootstrap 3
+* daterangepicker js
 * moment js
 * improvely (css only)
 
 
 # Demo
-http://ohadpartuck.github.io/filter_demo/
+http://ohadperry.github.io/filter_demo/
 
 # Licence
 DWYWWI (Do Whatever You Want With It).
 
 # Love it?
-compliments here - ohadpartuck@gmail.com
+compliments here - ohad.perry9@gmail.com
 
 # Changes Log
 ## V0.3.0
-adding support for text fields in the url.try it out. 
+adding support for text fields in the url.try it out.
 
 
 ## V0.1.8
-adding a big feature. Saved filters will be shown on the url. Using the History.js libary. 
+adding a big feature. Saved filters will be shown on the url. Using the History.js libary.
 
 ## V0.1.5
 adding feature - enable shift + multi select to checkboxes.
@@ -127,5 +127,3 @@ adding feature - enable shift + multi select to checkboxes.
 ## V0.1.1
 * Added a clear button for the date range.
 * Added a search box for screening filter options.
-
-
