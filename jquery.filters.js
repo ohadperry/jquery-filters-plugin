@@ -653,7 +653,7 @@
     function libraryDependenciesValidations(){
         if (typeof History.Adapter === 'undefined') {
             throw 'History.js (https://github.com/browserstate/history.js) is a dependency for backoffice filters. ' +
-            'See the docs (http://ohadpartuck.github.io/filter_demo) as to how to install it.'
+            'See the docs (http://ohadperry.github.io/filter_demo) as to how to install it.'
         }
     }
 

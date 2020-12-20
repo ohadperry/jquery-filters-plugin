@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ohadpartuck/jquery-filters-plugin.git"
+    "url": "git+https://github.com/ohadperry/jquery-filters-plugin.git"
   },
   "keywords": [
     "jquery",
@@ -26,9 +26,9 @@
   "author": "ohad perry",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ohadpartuck/jquery-filters-plugin/issues"
+    "url": "https://github.com/ohadperry/jquery-filters-plugin/issues"
   },
-  "homepage": "https://github.com/ohadpartuck/jquery-filters-plugin#readme",
+  "homepage": "https://github.com/ohadperry/jquery-filters-plugin#readme",
   "dependencies": {
     "bootstrap": "^4.5.3",
     "daterangepicker": "0.0.3",
