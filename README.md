@@ -95,7 +95,7 @@ Filter 2 Option2 -> Filter 1 Option2
 # Dependencies
 
 * Jquery
-* Bootstrap 3
+* Bootstrap 4
 * daterangepicker js
 * moment js
 * improvely (css only)
@@ -111,6 +111,9 @@ DWYWWI (Do Whatever You Want With It).
 compliments here - ohad.perry9@gmail.com
 
 # Changes Log
+## V0.4.0
+upgrade bootstrap to 4.5.3
+
 ## V0.3.0
 adding support for text fields in the url.try it out.
 

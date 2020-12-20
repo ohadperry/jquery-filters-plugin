@@ -1,6 +1,6 @@
 {
   "name": "backoffice-filters",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Easy Setup - filters rending out of the box for backoffice use.",
   "main": "jquery.filters.js",
   "scripts": {
@@ -30,7 +30,7 @@
   },
   "homepage": "https://github.com/ohadpartuck/jquery-filters-plugin#readme",
   "dependencies": {
-    "bootstrap": "^3.3.5",
+    "bootstrap": "^4.5.3",
     "daterangepicker": "0.0.3",
     "jquery": "^2.1.4",
     "moment": "^2.10.6"
