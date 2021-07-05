@@ -3,9 +3,9 @@ No Download Needed. jQuery filters rending out of the box for backoffice use.
 
 <img src="https://badge.fury.io/js/backoffice-filters.png" />
 
-<a href="http://ohadpartuck.github.io/filter_demo/" target="_blank">demo</a>
+<a href="http://ohadperry.github.io/filter_demo/" target="_blank">demo</a>
 
-![Sample](https://cdn.rawgit.com/ohadpartuck/jquery-filters-plugin/master/demo/filters_demo.gif)
+![Sample](https://cdn.rawgit.com/ohadperry/jquery-filters-plugin/master/demo/filters_demo.gif)
 
 # Quick Start
 ```
@@ -19,10 +19,10 @@ No Download Needed. jQuery filters rending out of the box for backoffice use.
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
     <script src="http://momentjs.com/downloads/moment.min.js"></script>
     <script src="https://cdn.rawgit.com/dangrossman/bootstrap-daterangepicker/master/daterangepicker.js"></script>
-    <script src="https://cdn.rawgit.com/ohadpartuck/jquery-filters-plugin/v0.1.1/jquery.filters.js" type="text/javascript"></script>
+    <script src="https://cdn.rawgit.com/ohadperry/jquery-filters-plugin/v0.1.1/jquery.filters.js" type="text/javascript"></script>
 
     <link rel="stylesheet" media="all" href="https://cdn.rawgit.com/dangrossman/bootstrap-daterangepicker/master/daterangepicker-bs3.css">
-    <link rel="stylesheet" media="all" href="https://cdn.rawgit.com/ohadpartuck/jquery-filters-plugin/v0.1.1/css/jquery.filters.css">
+    <link rel="stylesheet" media="all" href="https://cdn.rawgit.com/ohadperry/jquery-filters-plugin/v0.1.1/css/jquery.filters.css">
     <link rel="stylesheet" media="all" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 </head>
 <body>
